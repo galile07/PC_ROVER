@@ -1,0 +1,153 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PCROVERBALIWAG | Account</title>
+    <meta
+      name="description"
+      content="Manage your personal profile and security settings at PCROVERBALIWAG."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar hidden" id="topbar">
+      <div class="container nav-wrap">
+        <a class="brand" href="index.html">PCROVERBALIWAG</a>
+        <nav class="nav-links">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="categories.html" class="nav-link" data-protected="true">Categories</a>
+          <a href="account.html" class="nav-link" data-protected="true">Account</a>
+        </nav>
+        <div class="nav-actions">
+          <div class="user-menu">
+            <span class="account-status hidden" id="accountStatus" style="cursor: pointer;"></span>
+            <div id="userDropdown" class="dropdown hidden">
+              <button id="signOutBtn">Sign Out</button>
+            </div>
+          </div>
+          <a class="cart-btn" href="cart.html">Orders <span id="cartCount">0</span></a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="section section-alt">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">Account center</p>
+            <h2>Manage your account</h2>
+            <p>Update personal info and security settings.</p>
+          </div>
+          <div class="tabs account-tabs" id="accountTabs">
+            <button class="tab-button active" data-tab="profileTab">Profile</button>
+            <button class="tab-button" data-tab="securityTab">Security</button>
+          </div>
+          <div class="tab-panels account-panels">
+            <div class="tab-panel active" id="profileTab">
+              <form id="accountForm" class="form-card">
+                <label>
+                  Full name
+                  <input type="text" id="accountName" value="Alex Shopper" />
+                </label>
+                <label>
+                  Email address
+                  <input type="email" id="accountEmail" value="alex@pcroverbaliwag.com" />
+                </label>
+                <label>
+                  Phone number
+                  <input type="tel" id="accountPhone" placeholder="+63 912 345 6789" />
+                </label>
+                
+                <div class="credentials-section" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--gray-100);">
+                  <div class="credentials-header">
+                    <h3 style="margin: 0 0 0.25rem;">Delivery credentials</h3>
+                    <p style="margin: 0 0 1.25rem; color: var(--gray-700);">Save multiple phone and delivery address combinations for checkout.</p>
+                  </div>
+                  
+                  <div class="credential-list" id="credentialList" style="display: grid; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <p class="empty-state">No delivery credentials added yet.</p>
+                  </div>
+                  
+                  <div class="add-credential-box">
+                    <h4 style="margin: 0 0 1rem; color: var(--gray-900); font-size: 1rem;">Add a new address</h4>
+                    <div style="display: grid; gap: 1rem;">
+                      <label>
+                        Contact number for delivery
+                        <input type="tel" id="credentialPhone" placeholder="+63 912 345 6789" />
+                      </label>
+                      <label>
+                        Delivery address
+                        <input type="text" id="credentialAddress" placeholder="House number, street, barangay, city" />
+                      </label>
+                      <button type="button" class="btn btn-secondary" id="addCredentialBtn">Add Delivery Credential</button>
+                    </div>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Save Profile</button>
+              </form>
+            </div>
+            <div class="tab-panel" id="securityTab">
+              <form class="form-card">
+                <label>
+                  New password
+                  <input type="password" id="accountPassword" placeholder="••••••••" />
+                </label>
+                <label>
+                  Two-factor authentication
+                  <select>
+                    <option>Email verification</option>
+                    <option>SMS verification</option>
+                  </select>
+                </label>
+                <button type="button" class="btn btn-primary">Update Security</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-wrap">
+        <p>© <span id="year"></span> PCROVERBALIWAG. All rights reserved.</p>
+        <div class="footer-links">
+          <a href="#">Privacy</a>
+          <a href="#">Support</a>
+          <a href="#">Shipping</a>
+        </div>
+      </div>
+    </footer>
+
+    <div class="overlay hidden" id="overlay"></div>
+
+    <div class="modal hidden" id="signInModal">
+      <div class="modal-card">
+        <button class="modal-close" id="closeSignInBtn">×</button>
+        <p class="eyebrow">Sign in</p>
+        <h2>Access your account</h2>
+        <form id="signInForm" class="form-card">
+          <label>
+            Email address
+            <input type="email" id="signInEmail" placeholder="you@example.com" required />
+          </label>
+          <label>
+            Password
+            <input type="password" id="signInPassword" placeholder="••••••••" required />
+          </label>
+          <button type="submit" class="btn btn-primary">Sign In</button>
+        </form>
+        <p class="modal-note">No account? Use the profile settings section on the account page to set up your details.</p>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

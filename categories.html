@@ -1,0 +1,217 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PCROVERBALIWAG | Categories</title>
+    <meta
+      name="description"
+      content="Browse product categories for computers, accessories, and security gear at PCROVERBALIWAG."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar hidden" id="topbar">
+      <div class="container nav-wrap">
+        <a class="brand" href="index.html">PCROVERBALIWAG</a>
+        <nav class="nav-links">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="categories.html" class="nav-link" data-protected="true">Categories</a>
+          <a href="account.html" class="nav-link" data-protected="true">Account</a>
+        </nav>
+        <div class="nav-actions">
+          <div class="user-menu">
+            <span class="account-status hidden" id="accountStatus" style="cursor: pointer;"></span>
+            <div id="userDropdown" class="dropdown hidden">
+              <button id="signOutBtn">Sign Out</button>
+            </div>
+          </div>
+          <a class="cart-btn" href="cart.html">Orders <span id="cartCount">0</span></a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">Product categories</p>
+            <h2>Shop by category</h2>
+            <p>Browse computers, accessories, security gear, and pre-owned systems.</p>
+          </div>
+          <div class="tabs" id="categoryTabs">
+            <button class="tab-button active" data-tab="computers">Computers</button>
+            <button class="tab-button" data-tab="accessories">Accessories</button>
+            <button class="tab-button" data-tab="security">Security</button>
+            <button class="tab-button" data-tab="preowned">Pre-Owned</button>
+          </div>
+          <div class="tab-panels">
+            <div class="tab-panel active" id="computers">
+              <div class="product-grid">
+                <article class="product-card">
+                  <img src="https://images.unsplash.com/photo-1518444065439-e933c06ce9cd?auto=format&fit=crop&w=900&q=80" alt="High-performance desktop computer" />
+                  <div class="product-info">
+                    <h3>Gaming Desktop</h3>
+                    <p>High-performance PC for gaming and content creation.</p>
+                    <div class="product-meta">
+                      <span>₱1,299.00</span>
+                      <button class="add-btn">Add to Cart</button>
+                    </div>
+                  </div>
+                </article>
+                <article class="product-card">
+                  <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=900&q=80" alt="Professional laptop" />
+                  <div class="product-info">
+                    <h3>Workstation Laptop</h3>
+                    <p>Portable power for design, editing, and business.</p>
+                    <div class="product-meta">
+                      <span>₱1,099.00</span>
+                      <button class="add-btn">Add to Cart</button>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </div>
+            <div class="tab-panel" id="accessories">
+              <div class="product-grid">
+                <article class="product-card">
+                  <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80" alt="Mechanical keyboard" />
+                  <div class="product-info">
+                    <h3>Mechanical Keyboard</h3>
+                    <p>RGB backlit keyboard built for speed and durability.</p>
+                    <div class="product-meta">
+                      <span>₱94.00</span>
+                      <button class="add-btn">Add to Cart</button>
+                    </div>
+                  </div>
+                </article>
+                <article class="product-card">
+                  <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=900&q=80" alt="Wireless mouse" />
+                  <div class="product-info">
+                    <h3>Wireless Mouse</h3>
+                    <p>Comfortable control with programmable buttons.</p>
+                    <div class="product-meta">
+                      <span>₱55.00</span>
+                      <button class="add-btn">Add to Cart</button>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </div>
+            <div class="tab-panel" id="security">
+              <div class="product-grid">
+                <article class="product-card">
+                  <img src="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=900&q=80" alt="CCTV camera system" />
+                  <div class="product-info">
+                    <h3>CCTV Camera Kit</h3>
+                    <p>Complete security system for home and small business.</p>
+                    <div class="product-meta">
+                      <span>₱129.00</span>
+                      <button class="add-btn">Add to Cart</button>
+                    </div>
+                  </div>
+                </article>
+                <article class="product-card">
+                  <img src="https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?auto=format&fit=crop&w=900&q=80" alt="Security camera" />
+                  <div class="product-info">
+                    <h3>Smart Security Camera</h3>
+                    <p>Remote monitoring with night vision and alerts.</p>
+                    <div class="product-meta">
+                      <span>₱79.00</span>
+                      <button class="add-btn">Add to Cart</button>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </div>
+            <div class="tab-panel" id="preowned">
+              <div class="product-grid">
+                <article class="product-card">
+                  <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80" alt="Pre-owned laptop" />
+                  <div class="product-info">
+                    <h3>Pre-Owned Laptop</h3>
+                    <p>Inspected and refurbished for reliable performance.</p>
+                    <div class="product-meta">
+                      <span>₱649.00</span>
+                      <button class="add-btn">Add to Cart</button>
+                    </div>
+                  </div>
+                </article>
+                <article class="product-card">
+                  <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=900&q=80" alt="Refurbished desktop" />
+                  <div class="product-info">
+                    <h3>Refurbished Desktop</h3>
+                    <p>Tested hardware with a warranty-ready setup.</p>
+                    <div class="product-meta">
+                      <span>₱749.00</span>
+                      <button class="add-btn">Add to Cart</button>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-wrap">
+        <p>© <span id="year"></span> PCROVERBALIWAG. All rights reserved.</p>
+        <div class="footer-links">
+          <a href="#">Privacy</a>
+          <a href="#">Support</a>
+          <a href="#">Shipping</a>
+        </div>
+      </div>
+    </footer>
+
+    <div class="overlay hidden" id="overlay"></div>
+
+    <div class="modal hidden" id="signInModal">
+      <div class="modal-card">
+        <button class="modal-close" id="closeSignInBtn">×</button>
+        <p class="eyebrow">Sign in</p>
+        <h2>Access your account</h2>
+        <form id="signInForm" class="form-card">
+          <label>
+            Email address
+            <input type="email" id="signInEmail" placeholder="you@example.com" required />
+          </label>
+          <label>
+            Password
+            <input type="password" id="signInPassword" placeholder="••••••••" required />
+          </label>
+          <button type="submit" class="btn btn-primary">Sign In</button>
+        </form>
+        <p class="modal-note">No account? Use the profile settings section on the account page to set up your details.</p>
+      </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal hidden" id="productModal">
+      <div class="modal-card">
+        <button class="modal-close" id="closeProductModalBtn">×</button>
+        <div class="product-modal-content">
+          <img id="modalProductImage" src="" alt="Product Image" style="width: 100%; border-radius: 8px; margin-bottom: 1rem; max-height: 250px; object-fit: cover;" />
+          <h2 id="modalProductTitle" style="margin-bottom: 0.5rem; font-size: 1.5rem;"></h2>
+          <p id="modalProductDesc" style="color: #666; margin-bottom: 1rem;"></p>
+          <strong id="modalProductPrice" style="font-size: 1.25rem; display: block; margin-bottom: 1.5rem;"></strong>
+          
+          <div style="display: flex; gap: 1rem;">
+            <button class="btn btn-secondary" id="modalAddToCartBtn" style="flex: 1;">Add to Cart</button>
+            <button class="btn btn-primary" id="modalCheckoutBtn" style="flex: 1;">Checkout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

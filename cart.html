@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PCROVERBALIWAG | Cart & Orders</title>
+    <meta
+      name="description"
+      content="Review items in your cart and track your orders at PCROVERBALIWAG."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="orders-page">
+    <header class="topbar hidden" id="topbar">
+      <div class="container nav-wrap">
+        <a class="brand" href="index.html">PCROVERBALIWAG</a>
+        <nav class="nav-links">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="categories.html" class="nav-link" data-protected="true">Categories</a>
+          <a href="account.html" class="nav-link" data-protected="true">Account</a>
+        </nav>
+        <div class="nav-actions">
+          <div class="user-menu">
+            <span class="account-status hidden" id="accountStatus" style="cursor: pointer;"></span>
+            <div id="userDropdown" class="dropdown hidden">
+              <button id="signOutBtn">Sign Out</button>
+            </div>
+          </div>
+          <a class="cart-btn" href="cart.html">Orders <span id="cartCount">0</span></a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">Shopping cart & Orders</p>
+            <h2>Your selected items & History</h2>
+            <p>Review items before checkout or track your current orders.</p>
+          </div>
+          
+          <div class="tabs" id="cartTabs">
+            <button class="tab-button active" data-tab="cartTab">Cart</button>
+            <button class="tab-button" data-tab="ordersTab">Orders</button>
+            <button class="tab-button" data-tab="toShipTab">To Ship</button>
+            <button class="tab-button" data-tab="toReceiveTab">To Receive</button>
+          </div>
+
+          <div class="tab-panels">
+            <div class="tab-panel active" id="cartTab">
+              <div class="cart-page" style="margin-top: 1.5rem;">
+                <div id="cartItems">
+                  <p class="empty-state">Your cart is empty. Add a product to get started.</p>
+                </div>
+                <div class="cart-total">
+                  <span>Total</span>
+                  <strong id="cartTotal">₱0.00</strong>
+                </div>
+                <button class="btn btn-primary" id="checkoutBtn">Checkout</button>
+              </div>
+            </div>
+
+            <div class="tab-panel" id="ordersTab">
+              <div style="padding: 3rem 0; text-align: center;">
+                <p class="empty-state">You have no past orders.</p>
+              </div>
+            </div>
+
+            <div class="tab-panel" id="toShipTab">
+              <div style="padding: 3rem 0; text-align: center;">
+                <p class="empty-state">You have no items waiting to be shipped.</p>
+              </div>
+            </div>
+
+            <div class="tab-panel" id="toReceiveTab">
+              <div style="padding: 3rem 0; text-align: center;">
+                <p class="empty-state">You have no items currently out for delivery.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-wrap">
+        <p>© <span id="year"></span> PCROVERBALIWAG. All rights reserved.</p>
+        <div class="footer-links">
+          <a href="#">Privacy</a>
+          <a href="#">Support</a>
+          <a href="#">Shipping</a>
+        </div>
+      </div>
+    </footer>
+
+    <div class="overlay hidden" id="overlay"></div>
+
+    <div class="modal hidden" id="signInModal">
+      <div class="modal-card">
+        <button class="modal-close" id="closeSignInBtn">×</button>
+        <p class="eyebrow">Sign in</p>
+        <h2>Access your account</h2>
+        <form id="signInForm" class="form-card">
+          <label>
+            Email address
+            <input type="email" id="signInEmail" placeholder="you@example.com" required />
+          </label>
+          <label>
+            Password
+            <input type="password" id="signInPassword" placeholder="••••••••" required />
+          </label>
+          <button type="submit" class="btn btn-primary">Sign In</button>
+        </form>
+        <p class="modal-note">No account? Use the profile settings section on the account page to set up your details.</p>
+      </div>
+    </div>
+
+    <div class="modal hidden" id="paymentModal">
+      <div class="modal-card">
+        <button class="modal-close" id="closePaymentBtn">×</button>
+        <p class="eyebrow">Checkout</p>
+        <h2>Select payment and delivery credentials</h2>
+        <form id="paymentForm" class="form-card">
+          <label>
+            Payment method
+            <select id="paymentMethod">
+              <option value="cod">Cash on Delivery</option>
+              <option value="gcash">GCash</option>
+            </select>
+          </label>
+          <label>
+            Delivery credential
+            <select id="credentialSelect"></select>
+          </label>
+          <button type="submit" class="btn btn-primary">Confirm Checkout</button>
+        </form>
+        <p class="modal-note">You can choose saved delivery credentials from your account.</p>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
