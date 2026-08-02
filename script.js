@@ -50,7 +50,7 @@ const signInError = document.getElementById('signInError');
 // --- Supabase Client ---
 const SUPABASE_URL = window.SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || '';
-const supabase =
+const supabaseClient =
   SUPABASE_URL && SUPABASE_ANON_KEY ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 let editingCredentialId = null;
@@ -74,8 +74,40 @@ const ORDER_STATUS_LABELS = {
   cancelled: 'Cancelled',
 };
 
-const FALLBACK_IMAGE =
-  'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=900&q=80';
+const IMAGE_POOL = [
+  '1517336714731-489689fd1ca8',
+  '1587829741301-dc798b83add3',
+  '1527814050087-3793815479db',
+  '1505740420928-5e560c06d30e',
+  '1527443224154-c4a3942d3acf',
+  '1516035069371-29a1b244cc32',
+  '1608043152269-423dbba4e7e1',
+  '1622233744431-84c86c7f60f4',
+  '1618384887929-16ec33fab9ef',
+  '1585060544812-6b45742d762f',
+  '1593640408182-31c70c8268f5',
+  '1587202372775-e229f172b9d7',
+];
+
+function hashString(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
+function unsplashImage(seed, width) {
+  const id = IMAGE_POOL[hashString(String(seed)) % IMAGE_POOL.length];
+  return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${width}&q=80`;
+}
+
+function productImage(product, width) {
+  if (product.image) {
+    return escapeHtml(product.image);
+  }
+  return unsplashImage(product.name, width);
+}
 
 function formatCurrency(value) {
   return `₱${Number(value).toLocaleString('en-PH', {
@@ -160,14 +192,14 @@ function parseCurrencyValue(priceString) {
 // ---------- Auth ----------
 
 async function ensureProfile(authUser) {
-  const { data, error } = await supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle();
+  const { data, error } = await supabaseClient.from('profiles').select('*').eq('id', authUser.id).maybeSingle();
   if (error) {
     console.error('ensureProfile select', error);
     return null;
   }
   if (data) return data;
 
-  const { data: inserted, error: insertError } = await supabase
+  const { data: inserted, error: insertError } = await supabaseClient
     .from('profiles')
     .insert({ id: authUser.id, email: authUser.email, name: deriveName(authUser.email), phone: '' })
     .select()
@@ -245,14 +277,17 @@ function setSignInMode(signUp) {
 // ---------- Products ----------
 
 async function loadProducts() {
-  if (!supabase) return;
-  const { data, error } = await supabase
+  if (!supabaseClient) return;
+  const { data, error } = await supabaseClient
     .from('inventory')
     .select('*')
     .eq('enabled', true)
     .order('id', { ascending: true });
   if (error) {
     console.error('loadProducts', error);
+    document.querySelectorAll('[data-products]').forEach((grid) => {
+      grid.innerHTML = '<p class="empty-state">Could not load products. Please try again later.</p>';
+    });
     return;
   }
   productsMap = {};
@@ -279,10 +314,6 @@ function productFallbackDescription(product) {
   return 'Quality tech product available at PC ROVER BALIWAG.';
 }
 
-function productImage(product) {
-  return escapeHtml(product.image || FALLBACK_IMAGE);
-}
-
 function productDescription(product) {
   const description = (product.description || '').trim();
   return escapeHtml(description || productFallbackDescription(product));
@@ -291,7 +322,7 @@ function productDescription(product) {
 function productCard(product) {
   return `
     <article class="product-card" data-id="${escapeHtml(product.id)}">
-      <img src="${productImage(product)}" alt="${escapeHtml(product.name)}" loading="lazy" />
+      <img src="${productImage(product, 600)}" alt="${escapeHtml(product.name)}" loading="lazy" />
       <div class="product-info">
         <h3>${escapeHtml(product.name)}</h3>
         <p>${productDescription(product)}</p>
@@ -310,7 +341,7 @@ function masonryTile(product, index) {
   const height = MASONRY_HEIGHTS[index % MASONRY_HEIGHTS.length];
   return `
     <button type="button" class="masonry-tile" data-id="${escapeHtml(product.id)}" style="height:${height}px">
-      <img src="${productImage(product)}" alt="${escapeHtml(product.name)}" loading="lazy" />
+      <img src="${productImage(product, 400)}" alt="${escapeHtml(product.name)}" loading="lazy" />
     </button>
   `;
 }
@@ -335,8 +366,8 @@ function renderProducts(products) {
 // ---------- Credentials ----------
 
 async function loadCredentials() {
-  if (!supabase || !currentUser) return;
-  const { data, error } = await supabase
+  if (!supabaseClient || !currentUser) return;
+  const { data, error } = await supabaseClient
     .from('credentials')
     .select('*')
     .eq('user_id', currentUser.id)
@@ -354,16 +385,16 @@ async function loadCredentials() {
 }
 
 async function saveCredential(phone, address) {
-  if (!supabase || !currentUser) return false;
+  if (!supabaseClient || !currentUser) return false;
   if (editingCredentialId) {
-    const { error } = await supabase.from('credentials').update({ phone, address }).eq('id', editingCredentialId);
+    const { error } = await supabaseClient.from('credentials').update({ phone, address }).eq('id', editingCredentialId);
     if (error) {
       alert('Failed to save credential: ' + error.message);
       return false;
     }
     editingCredentialId = null;
   } else {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('credentials')
       .insert({ user_id: currentUser.id, phone, address })
       .select()
@@ -379,8 +410,8 @@ async function saveCredential(phone, address) {
 }
 
 async function deleteCredential(id) {
-  if (!supabase || !currentUser) return false;
-  const { error } = await supabase.from('credentials').delete().eq('id', id);
+  if (!supabaseClient || !currentUser) return false;
+  const { error } = await supabaseClient.from('credentials').delete().eq('id', id);
   if (error) {
     alert('Failed to delete credential: ' + error.message);
     return false;
@@ -392,8 +423,8 @@ async function deleteCredential(id) {
 // ---------- Orders ----------
 
 async function placeOrder(items, total, method, credential) {
-  if (!supabase || !currentUser) return false;
-  const { error } = await supabase.from('orders').insert({
+  if (!supabaseClient || !currentUser) return false;
+  const { error } = await supabaseClient.from('orders').insert({
     user_id: currentUser.id,
     items: items.map((item) => ({ name: item.name, price: item.price, value: Number(item.value) || 0 })),
     total,
@@ -454,8 +485,8 @@ function renderOrders(orders) {
 }
 
 async function loadOrders() {
-  if (!supabase || !currentUser) return;
-  const { data, error } = await supabase
+  if (!supabaseClient || !currentUser) return;
+  const { data, error } = await supabaseClient
     .from('orders')
     .select('*')
     .eq('user_id', currentUser.id)
@@ -572,7 +603,7 @@ function openProductModal(product, addButtonEl) {
     price: formatCurrency(product.price),
     value: Number(product.price),
     desc: (product.description || '').trim() || productFallbackDescription(product),
-    imgSrc: product.image || FALLBACK_IMAGE,
+    imgSrc: productImage(product, 900),
     imgAlt: product.name,
   };
   currentAddButtonEl = addButtonEl || null;
@@ -776,8 +807,8 @@ function init() {
   updateCartCount();
   setActiveNavLink();
 
-  if (supabase) {
-    supabase.auth.onAuthStateChange(async (event, session) => {
+  if (supabaseClient) {
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
       if (session) {
         await handleSignedIn(session.user);
         closePanel(signInModal);
@@ -828,7 +859,7 @@ function init() {
       }
 
       if (isSignUpMode) {
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await supabaseClient.auth.signUp({
           email,
           password,
           options: { data: { name: deriveName(email) } },
@@ -841,7 +872,7 @@ function init() {
           closePanel(signInModal);
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) {
           showFormError('Invalid email or password. If you are new, choose "Create one" below.');
         }
@@ -870,7 +901,7 @@ function init() {
         showFormError('Enter a valid email address to receive a reset link.');
         return;
       }
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email);
       if (error) {
         showFormError(error.message);
         return;
@@ -927,7 +958,7 @@ function init() {
       event.preventDefault();
       if (!accountNameInput || !accountEmailInput || !currentUser) return;
 
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('profiles')
         .update({
           name: accountNameInput.value.trim(),
@@ -1055,7 +1086,7 @@ function init() {
   if (signOutBtn) {
     signOutBtn.addEventListener('click', async () => {
       try {
-        await supabase.auth.signOut();
+        await supabaseClient.auth.signOut();
       } catch (err) {
         console.error('signOut error', err);
       }
