@@ -46,7 +46,7 @@ const signInPassword = document.getElementById('signInPassword');
 const togglePasswordBtn = document.getElementById('togglePasswordBtn');
 const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
 const signInError = document.getElementById('signInError');
-const emailLinkBtn = document.getElementById('emailLinkBtn');
+const googleSignInBtn = document.getElementById('googleSignInBtn');
 const shopNowBtn = document.getElementById('shopNowBtn');
 
 // --- Supabase Client ---
@@ -596,6 +596,8 @@ function closePanel(panel) {
 function requireSignIn() {
   if (!isSignedIn) {
     clearFormError();
+    if (productModal) closePanel(productModal);
+    if (paymentModal) closePanel(paymentModal);
     setSignInMode(false);
     openPanel(signInModal);
     return false;
@@ -916,20 +918,20 @@ function init() {
     });
   }
 
-  if (emailLinkBtn && signInEmail) {
-    emailLinkBtn.addEventListener('click', async () => {
+  if (googleSignInBtn) {
+    googleSignInBtn.addEventListener('click', async () => {
       clearFormError();
-      const email = signInEmail.value.trim();
-      if (!email || !isValidEmail(email)) {
-        showFormError('Enter a valid email address to receive a sign-in link.');
-        return;
+      try {
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: window.location.origin + window.location.pathname },
+        });
+        if (error) {
+          showFormError(error.message);
+        }
+      } catch (err) {
+        showFormError(err.message || 'Google sign-in could not be started.');
       }
-      const { error } = await supabaseClient.auth.signInWithOtp({ email });
-      if (error) {
-        showFormError(error.message);
-        return;
-      }
-      showFormError('Sign-in link sent to your email. Check your inbox.', true);
     });
   }
 
