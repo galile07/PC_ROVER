@@ -233,6 +233,8 @@ img {
 }
 
 .hero-masonry {
+  max-height: 640px;
+  overflow-y: auto;
   border-radius: 1.5rem;
 }
 
@@ -948,6 +950,11 @@ img {
 
   .hero-actions {
     justify-content: center;
+  }
+
+  .hero-masonry {
+    max-height: none;
+    overflow: visible;
   }
 
   .product-grid {
