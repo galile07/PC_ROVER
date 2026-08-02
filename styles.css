@@ -218,19 +218,7 @@ img {
 }
 
 .hero-masonry {
-  max-height: 640px;
-  overflow-y: auto;
-  padding-right: 0.35rem;
   border-radius: 1.5rem;
-}
-
-.hero-masonry::-webkit-scrollbar {
-  width: 6px;
-}
-
-.hero-masonry::-webkit-scrollbar-thumb {
-  background: var(--gray-300);
-  border-radius: 999px;
 }
 
 .masonry {
@@ -945,11 +933,6 @@ img {
 
   .hero-actions {
     justify-content: center;
-  }
-
-  .hero-masonry {
-    max-height: none;
-    overflow: visible;
   }
 
   .product-grid {
