@@ -46,6 +46,8 @@ const signInPassword = document.getElementById('signInPassword');
 const togglePasswordBtn = document.getElementById('togglePasswordBtn');
 const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
 const signInError = document.getElementById('signInError');
+const emailLinkBtn = document.getElementById('emailLinkBtn');
+const shopNowBtn = document.getElementById('shopNowBtn');
 
 // --- Supabase Client ---
 const SUPABASE_URL = window.SUPABASE_URL || '';
@@ -911,6 +913,31 @@ function init() {
         return;
       }
       showFormError('Password reset link sent. Check your inbox.', true);
+    });
+  }
+
+  if (emailLinkBtn && signInEmail) {
+    emailLinkBtn.addEventListener('click', async () => {
+      clearFormError();
+      const email = signInEmail.value.trim();
+      if (!email || !isValidEmail(email)) {
+        showFormError('Enter a valid email address to receive a sign-in link.');
+        return;
+      }
+      const { error } = await supabaseClient.auth.signInWithOtp({ email });
+      if (error) {
+        showFormError(error.message);
+        return;
+      }
+      showFormError('Sign-in link sent to your email. Check your inbox.', true);
+    });
+  }
+
+  if (shopNowBtn) {
+    shopNowBtn.addEventListener('click', () => {
+      clearFormError();
+      setSignInMode(false);
+      openPanel(signInModal);
     });
   }
 
