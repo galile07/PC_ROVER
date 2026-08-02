@@ -17,12 +17,12 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header class="topbar hidden" id="topbar">
+    <header class="topbar" id="topbar">
       <div class="container nav-wrap">
         <a class="brand" href="index.html">PCROVERBALIWAG</a>
         <nav class="nav-links">
           <a href="index.html" class="nav-link">Home</a>
-          <a href="categories.html" class="nav-link" data-protected="true">Categories</a>
+          <a href="categories.html" class="nav-link">Categories</a>
           <a href="account.html" class="nav-link" data-protected="true">Account</a>
         </nav>
         <div class="nav-actions">
@@ -58,7 +58,8 @@
                 </label>
                 <label>
                   Email address
-                  <input type="email" id="accountEmail" value="alex@pcroverbaliwag.com" />
+                  <input type="email" id="accountEmail" value="alex@pcroverbaliwag.com" readonly style="background: var(--gray-50);" />
+                  <span style="font-weight: 400; font-size: 0.85rem; color: var(--gray-700);">Your email is managed by your account login and cannot be changed here.</span>
                 </label>
                 <label>
                   Phone number
@@ -129,25 +130,38 @@
     <div class="overlay hidden" id="overlay"></div>
 
     <div class="modal hidden" id="signInModal">
-      <div class="modal-card">
+      <div class="modal-card auth-card">
         <button class="modal-close" id="closeSignInBtn">×</button>
-        <p class="eyebrow">Sign in</p>
-        <h2>Access your account</h2>
+        <div class="auth-brand">
+          <span class="auth-logo">PCROVERBALIWAG</span>
+        </div>
+        <p class="eyebrow">Account</p>
+        <h2 id="signInTitle">Access your account</h2>
         <form id="signInForm" class="form-card">
           <label>
             Email address
-            <input type="email" id="signInEmail" placeholder="you@example.com" required />
+            <input type="email" id="signInEmail" placeholder="you@example.com" autocomplete="email" required />
           </label>
           <label>
             Password
-            <input type="password" id="signInPassword" placeholder="••••••••" required />
+            <div class="password-input-wrap">
+              <input type="password" id="signInPassword" placeholder="••••••••" autocomplete="current-password" required />
+              <button type="button" class="password-toggle" id="togglePasswordBtn">Show</button>
+            </div>
           </label>
-          <button type="submit" class="btn btn-primary">Sign In</button>
+          <div class="auth-row">
+            <button type="button" class="forgot-link" id="forgotPasswordBtn">Forgot password?</button>
+          </div>
+          <p class="form-error hidden" id="signInError"></p>
+          <button type="submit" class="btn btn-primary" id="signInSubmitBtn">Sign In</button>
         </form>
-        <p class="modal-note">No account? Use the profile settings section on the account page to set up your details.</p>
+        <button type="button" id="toggleSignUpBtn" class="modal-link">No account? Create one</button>
+        <p class="modal-note" id="signInNote">Sign in to access your cart, orders, and account.</p>
       </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabaseConfig.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

@@ -1,11 +1,8 @@
 ﻿const year = document.getElementById('year');
-const addButtons = document.querySelectorAll('.add-btn');
 const overlay = document.getElementById('overlay');
-const cartLinks = document.querySelectorAll('.cart-btn');
-const openCategoriesHeroBtn = document.getElementById('openCategoriesHeroBtn');
-const checkoutBtn = document.getElementById('checkoutBtn');
 const signInModal = document.getElementById('signInModal');
 const paymentModal = document.getElementById('paymentModal');
+const checkoutBtn = document.getElementById('checkoutBtn');
 const closeSignInBtn = document.getElementById('closeSignInBtn');
 const closePaymentBtn = document.getElementById('closePaymentBtn');
 const paymentForm = document.getElementById('paymentForm');
@@ -16,13 +13,13 @@ const accountStatus = document.getElementById('accountStatus');
 // Tab System Variables
 const categoryTabs = document.getElementById('categoryTabs');
 const accountTabs = document.getElementById('accountTabs');
-const cartTabs = document.getElementById('cartTabs'); // Added for the new cart page tabs
+const cartTabs = document.getElementById('cartTabs');
 
 const signInForm = document.getElementById('signInForm');
 const accountForm = document.getElementById('accountForm');
 const accountNameInput = document.getElementById('accountName');
 const accountEmailInput = document.getElementById('accountEmail');
-const accountPhoneInput = document.getElementById('accountPhone'); 
+const accountPhoneInput = document.getElementById('accountPhone');
 const credentialPhoneInput = document.getElementById('credentialPhone');
 const credentialAddressInput = document.getElementById('credentialAddress');
 const credentialList = document.getElementById('credentialList');
@@ -32,7 +29,7 @@ const cartTotal = document.getElementById('cartTotal');
 
 // Dropdown and Sign out elements
 const userDropdown = document.getElementById('userDropdown');
-const signOutBtn = document.getElementById('signOutBtn'); 
+const signOutBtn = document.getElementById('signOutBtn');
 
 // Modal Elements
 const productModal = document.getElementById('productModal');
@@ -43,8 +40,23 @@ const modalProductDesc = document.getElementById('modalProductDesc');
 const modalProductPrice = document.getElementById('modalProductPrice');
 const modalAddToCartBtn = document.getElementById('modalAddToCartBtn');
 const modalCheckoutBtn = document.getElementById('modalCheckoutBtn');
+const toggleSignUpBtn = document.getElementById('toggleSignUpBtn');
+const signInEmail = document.getElementById('signInEmail');
+const signInPassword = document.getElementById('signInPassword');
+const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+const signInError = document.getElementById('signInError');
 
-let editingCredentialIndex = null;
+// --- Supabase Client ---
+const SUPABASE_URL = window.SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || '';
+const supabase =
+  SUPABASE_URL && SUPABASE_ANON_KEY ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+let editingCredentialId = null;
+let credentials = [];
+let selectedCredentialId = localStorage.getItem('pcroverbaliwagSelectedCredential') || null;
+let isSignUpMode = false;
 let cart = [];
 let isSignedIn = false;
 let currentUser = null;
@@ -52,6 +64,18 @@ let currentUser = null;
 // Temporary variables for the product modal
 let currentSelectedProduct = null;
 let currentAddButtonEl = null;
+let productsMap = {};
+
+const ORDER_STATUS_LABELS = {
+  pending: 'Pending',
+  to_ship: 'To Ship',
+  shipped: 'To Receive',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
+};
+
+const FALLBACK_IMAGE =
+  'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=900&q=80';
 
 function formatCurrency(value) {
   return `₱${Number(value).toLocaleString('en-PH', {
@@ -60,10 +84,49 @@ function formatCurrency(value) {
   })}`;
 }
 
+function deriveName(email) {
+  return email
+    .split('@')[0]
+    .replace(/[.\-_]/g, ' ')
+    .split(' ')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function showFormError(message, isSuccess) {
+  if (signInError) {
+    signInError.textContent = message;
+    signInError.classList.remove('hidden');
+    signInError.classList.toggle('form-success', Boolean(isSuccess));
+  } else {
+    alert(message);
+  }
+}
+
+function clearFormError() {
+  if (signInError) {
+    signInError.textContent = '';
+    signInError.classList.add('hidden');
+    signInError.classList.remove('form-success');
+  }
+}
+
 function loadState() {
   const storedCart = localStorage.getItem('pcroverbaliwagCart');
   const storedUser = localStorage.getItem('pcroverbaliwagUser');
-
   cart = storedCart ? JSON.parse(storedCart) : [];
   if (storedUser) {
     currentUser = JSON.parse(storedUser);
@@ -74,27 +137,11 @@ function loadState() {
 function saveState() {
   localStorage.setItem('pcroverbaliwagCart', JSON.stringify(cart));
   if (currentUser) {
-    localStorage.setItem('pcroverbaliwagUser', JSON.stringify(currentUser));
+    localStorage.setItem(
+      'pcroverbaliwagUser',
+      JSON.stringify({ name: currentUser.name, email: currentUser.email, phone: currentUser.phone })
+    );
   }
-}
-
-function setSignedInState(user) {
-  isSignedIn = true;
-  currentUser = user;
-  const topbar = document.getElementById('topbar');
-  if (topbar) {
-    topbar.classList.remove('hidden');
-  }
-  if (accountStatus) {
-    accountStatus.textContent = `Hi, ${user.name.split(' ')[0]}`;
-    accountStatus.classList.remove('hidden');
-  }
-  if (accountNameInput && accountEmailInput) {
-    accountNameInput.value = user.name;
-    accountEmailInput.value = user.email;
-    if (accountPhoneInput) accountPhoneInput.value = user.phone || ''; 
-  }
-  saveState();
 }
 
 function updateCartCount() {
@@ -104,39 +151,323 @@ function updateCartCount() {
   }
 }
 
-function updateIndexPageView() {
-  const heroSection = document.getElementById('heroSection');
-  const homeDashboard = document.getElementById('homeDashboard');
-  const guestAccess = document.getElementById('guestAccess');
-  const topbar = document.getElementById('topbar');
-  const heroHeader = document.getElementById('heroHeader');
-
-  if (topbar) {
-    topbar.classList.toggle('hidden', !isSignedIn);
-  }
-
-  if (heroHeader) {
-    heroHeader.classList.toggle('hidden', isSignedIn);
-  }
-
-  if (heroSection && homeDashboard && guestAccess) {
-    if (isSignedIn) {
-      heroSection.classList.add('hidden');
-      homeDashboard.classList.remove('hidden');
-      guestAccess.classList.add('hidden');
-    } else {
-      heroSection.classList.remove('hidden');
-      homeDashboard.classList.add('hidden');
-      guestAccess.classList.add('hidden');
-    }
-  }
-}
-
 function parseCurrencyValue(priceString) {
   if (!priceString) return 0;
   const numericValue = Number(priceString.replace(/[^0-9.-]+/g, ''));
   return Number.isNaN(numericValue) ? 0 : numericValue;
 }
+
+// ---------- Auth ----------
+
+async function ensureProfile(authUser) {
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle();
+  if (error) {
+    console.error('ensureProfile select', error);
+    return null;
+  }
+  if (data) return data;
+
+  const { data: inserted, error: insertError } = await supabase
+    .from('profiles')
+    .insert({ id: authUser.id, email: authUser.email, name: deriveName(authUser.email), phone: '' })
+    .select()
+    .single();
+  if (insertError) {
+    console.error('ensureProfile insert', insertError);
+    return null;
+  }
+  return inserted;
+}
+
+function setSignedInState(user) {
+  isSignedIn = true;
+  currentUser = user;
+  if (accountStatus) {
+    accountStatus.textContent = `Hi, ${user.name.split(' ')[0]}`;
+    accountStatus.classList.remove('hidden');
+  }
+  if (accountNameInput && accountEmailInput) {
+    accountNameInput.value = user.name;
+    accountEmailInput.value = user.email;
+    if (accountPhoneInput) accountPhoneInput.value = user.phone || '';
+  }
+  saveState();
+}
+
+function clearUser() {
+  isSignedIn = false;
+  currentUser = null;
+  credentials = [];
+  localStorage.removeItem('pcroverbaliwagUser');
+  localStorage.removeItem('pcroverbaliwagSelectedCredential');
+  selectedCredentialId = null;
+  if (accountStatus) {
+    accountStatus.classList.add('hidden');
+    accountStatus.textContent = '';
+  }
+  renderCredentialList();
+  renderCredentialSelect();
+}
+
+async function handleSignedIn(authUser) {
+  const profile = await ensureProfile(authUser);
+  const user = {
+    id: authUser.id,
+    email: authUser.email,
+    name: profile?.name || deriveName(authUser.email),
+    phone: profile?.phone || '',
+  };
+  setSignedInState(user);
+  await loadCredentials();
+  await loadOrders();
+  renderCartPage();
+}
+
+function setSignInMode(signUp) {
+  clearFormError();
+  isSignUpMode = signUp;
+  const title = document.getElementById('signInTitle');
+  const note = document.getElementById('signInNote');
+  const submitBtn = document.getElementById('signInSubmitBtn');
+
+  if (title) title.textContent = signUp ? 'Create your account' : 'Access your account';
+  if (submitBtn) submitBtn.textContent = signUp ? 'Create Account' : 'Sign In';
+  if (note) {
+    note.textContent = signUp
+      ? 'Your account will be ready after you confirm your email.'
+      : 'Sign in to access your cart, orders, and account.';
+  }
+  if (toggleSignUpBtn) {
+    toggleSignUpBtn.textContent = signUp ? 'Have an account? Sign in' : 'No account? Create one';
+  }
+}
+
+// ---------- Products ----------
+
+async function loadProducts() {
+  if (!supabase) return;
+  const { data, error } = await supabase
+    .from('inventory')
+    .select('*')
+    .eq('enabled', true)
+    .order('id', { ascending: true });
+  if (error) {
+    console.error('loadProducts', error);
+    return;
+  }
+  productsMap = {};
+  (data || []).forEach((product) => {
+    productsMap[String(product.id)] = product;
+  });
+  renderProducts(data || []);
+}
+
+function productFallbackDescription(product) {
+  const category = (product.category || '').toLowerCase();
+  if (category === 'computers') {
+    return 'Brand-new computer unit, tested and ready to ship with fast delivery.';
+  }
+  if (category === 'accessories') {
+    return 'Essential accessory to complete your setup. Ships fast anywhere in BALIWAG.';
+  }
+  if (category === 'security') {
+    return 'Security and surveillance equipment for your home or business.';
+  }
+  if (category === 'preowned') {
+    return 'Pre-owned unit, quality-checked and ready to ship.';
+  }
+  return 'Quality tech product available at PC ROVER BALIWAG.';
+}
+
+function productImage(product) {
+  return escapeHtml(product.image || FALLBACK_IMAGE);
+}
+
+function productDescription(product) {
+  const description = (product.description || '').trim();
+  return escapeHtml(description || productFallbackDescription(product));
+}
+
+function productCard(product) {
+  return `
+    <article class="product-card" data-id="${escapeHtml(product.id)}">
+      <img src="${productImage(product)}" alt="${escapeHtml(product.name)}" loading="lazy" />
+      <div class="product-info">
+        <h3>${escapeHtml(product.name)}</h3>
+        <p>${productDescription(product)}</p>
+        <div class="product-meta">
+          <span>${formatCurrency(product.price)}</span>
+          <button class="add-btn">Add to Cart</button>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+const MASONRY_HEIGHTS = [180, 240, 200, 260, 190, 250, 210, 170, 230, 220];
+
+function masonryTile(product, index) {
+  const height = MASONRY_HEIGHTS[index % MASONRY_HEIGHTS.length];
+  return `
+    <button type="button" class="masonry-tile" data-id="${escapeHtml(product.id)}" style="height:${height}px">
+      <img src="${productImage(product)}" alt="${escapeHtml(product.name)}" loading="lazy" />
+    </button>
+  `;
+}
+
+function renderProducts(products) {
+  const grids = document.querySelectorAll('[data-products]');
+  grids.forEach((grid) => {
+    const category = grid.dataset.products;
+    const list = category === 'all' ? products : products.filter((product) => product.category === category);
+    if (!list.length) {
+      grid.innerHTML = '<p class="empty-state">No products in this category yet.</p>';
+      return;
+    }
+    if (grid.dataset.masonry === 'true') {
+      grid.innerHTML = list.map((product, index) => masonryTile(product, index)).join('');
+      return;
+    }
+    grid.innerHTML = list.map((product) => productCard(product)).join('');
+  });
+}
+
+// ---------- Credentials ----------
+
+async function loadCredentials() {
+  if (!supabase || !currentUser) return;
+  const { data, error } = await supabase
+    .from('credentials')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: true });
+  if (error) {
+    console.error('loadCredentials', error);
+    return;
+  }
+  credentials = data || [];
+  if (selectedCredentialId && !credentials.some((c) => c.id === selectedCredentialId)) {
+    selectedCredentialId = null;
+  }
+  renderCredentialList();
+  renderCredentialSelect();
+}
+
+async function saveCredential(phone, address) {
+  if (!supabase || !currentUser) return false;
+  if (editingCredentialId) {
+    const { error } = await supabase.from('credentials').update({ phone, address }).eq('id', editingCredentialId);
+    if (error) {
+      alert('Failed to save credential: ' + error.message);
+      return false;
+    }
+    editingCredentialId = null;
+  } else {
+    const { data, error } = await supabase
+      .from('credentials')
+      .insert({ user_id: currentUser.id, phone, address })
+      .select()
+      .single();
+    if (error) {
+      alert('Failed to add credential: ' + error.message);
+      return false;
+    }
+    if (data) selectedCredentialId = data.id;
+  }
+  localStorage.setItem('pcroverbaliwagSelectedCredential', selectedCredentialId || '');
+  return true;
+}
+
+async function deleteCredential(id) {
+  if (!supabase || !currentUser) return false;
+  const { error } = await supabase.from('credentials').delete().eq('id', id);
+  if (error) {
+    alert('Failed to delete credential: ' + error.message);
+    return false;
+  }
+  if (selectedCredentialId === id) selectedCredentialId = null;
+  return true;
+}
+
+// ---------- Orders ----------
+
+async function placeOrder(items, total, method, credential) {
+  if (!supabase || !currentUser) return false;
+  const { error } = await supabase.from('orders').insert({
+    user_id: currentUser.id,
+    items: items.map((item) => ({ name: item.name, price: item.price, value: Number(item.value) || 0 })),
+    total,
+    payment_method: method,
+    phone: credential.phone,
+    address: credential.address,
+    status: 'pending',
+  });
+  if (error) {
+    alert('Failed to place order: ' + error.message);
+    return false;
+  }
+  return true;
+}
+
+function renderOrders(orders) {
+  const ordersList = document.getElementById('ordersList');
+  const toShipList = document.getElementById('toShipList');
+  const toReceiveList = document.getElementById('toReceiveList');
+
+  const renderInto = (container, list) => {
+    if (!container) return;
+    container.innerHTML = '';
+    if (!list.length) {
+      container.innerHTML = '<p class="empty-state">Nothing here yet.</p>';
+      return;
+    }
+    list.forEach((order) => {
+      const card = document.createElement('div');
+      card.className = 'order-item';
+      const createdDate = new Date(order.created_at);
+      const dateText = Number.isNaN(createdDate.getTime())
+        ? ''
+        : createdDate.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
+      const itemsHtml = (Array.isArray(order.items) ? order.items : [])
+        .map((item) => `${escapeHtml(item.name)} — ${formatCurrency(item.value || 0)}`)
+        .join('<br>');
+      const methodText = order.payment_method === 'gcash' ? 'GCash' : 'Cash on Delivery';
+      card.innerHTML = `
+        <div class="order-header">
+          <strong>Order #${escapeHtml(String(order.id).slice(0, 8).toUpperCase())}</strong>
+          <span class="order-status">${ORDER_STATUS_LABELS[order.status] || escapeHtml(order.status)}</span>
+        </div>
+        <div class="order-meta">
+          <span>${dateText}</span>
+          <span>${methodText}</span>
+          <span>Total ${formatCurrency(order.total)}</span>
+        </div>
+        <div class="order-items">${itemsHtml}</div>
+      `;
+      container.appendChild(card);
+    });
+  };
+
+  renderInto(ordersList, orders);
+  renderInto(toShipList, orders.filter((order) => order.status === 'to_ship'));
+  renderInto(toReceiveList, orders.filter((order) => order.status === 'shipped'));
+}
+
+async function loadOrders() {
+  if (!supabase || !currentUser) return;
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.error('loadOrders', error);
+    return;
+  }
+  renderOrders(data || []);
+}
+
+// ---------- Cart ----------
 
 function renderCartPage() {
   if (!cartItems || !cartTotal) return;
@@ -161,7 +492,7 @@ function renderCartPage() {
       <label class="cart-checkbox">
         <input type="checkbox" data-index="${index}" ${item.selected ? 'checked' : ''} />
         <div class="cart-item-details">
-          <strong>${item.name}</strong>
+          <strong>${escapeHtml(item.name)}</strong>
           <span>${item.price}</span>
         </div>
       </label>
@@ -196,6 +527,19 @@ function renderCartPage() {
   cartTotal.textContent = formatCurrency(total);
 }
 
+function addToCart(product) {
+  cart.push({
+    name: product.name,
+    price: product.price,
+    value: product.value,
+    selected: true,
+  });
+  saveState();
+  updateCartCount();
+}
+
+// ---------- UI helpers ----------
+
 function openPanel(panel) {
   if (!panel) return;
   panel.classList.remove('hidden');
@@ -214,10 +558,34 @@ function closePanel(panel) {
 
 function requireSignIn() {
   if (!isSignedIn) {
+    clearFormError();
+    setSignInMode(false);
     openPanel(signInModal);
     return false;
   }
   return true;
+}
+
+function openProductModal(product, addButtonEl) {
+  currentSelectedProduct = {
+    name: product.name,
+    price: formatCurrency(product.price),
+    value: Number(product.price),
+    desc: (product.description || '').trim() || productFallbackDescription(product),
+    imgSrc: product.image || FALLBACK_IMAGE,
+    imgAlt: product.name,
+  };
+  currentAddButtonEl = addButtonEl || null;
+
+  if (modalProductImage) {
+    modalProductImage.src = currentSelectedProduct.imgSrc;
+    modalProductImage.alt = currentSelectedProduct.imgAlt;
+  }
+  if (modalProductTitle) modalProductTitle.textContent = currentSelectedProduct.name;
+  if (modalProductDesc) modalProductDesc.textContent = currentSelectedProduct.desc;
+  if (modalProductPrice) modalProductPrice.textContent = currentSelectedProduct.price;
+
+  openPanel(productModal);
 }
 
 function setupTabs(tabContainer) {
@@ -254,6 +622,7 @@ function protectNavLinks() {
       if (!isSignedIn) {
         event.preventDefault();
         event.stopPropagation();
+        setSignInMode(false);
         openPanel(signInModal);
       }
     });
@@ -261,7 +630,7 @@ function protectNavLinks() {
 }
 
 function enforceProtectedPageAccess() {
-  const protectedPages = ['categories.html', 'account.html', 'cart.html'];
+  const protectedPages = ['account.html', 'cart.html'];
   let currentPage = window.location.pathname.split('/').pop().toLowerCase();
   if (!currentPage) {
     currentPage = 'index.html';
@@ -275,13 +644,16 @@ function enforceProtectedPageAccess() {
 function openSignInIfRequested() {
   const params = new URLSearchParams(window.location.search);
   if (params.get('signin') === '1' && signInModal) {
+    clearFormError();
+    setSignInMode(false);
     openPanel(signInModal);
   }
 }
 
+// ---------- Credentials UI ----------
+
 function renderCredentialList() {
-  if (!currentUser || !credentialList) return;
-  const credentials = Array.isArray(currentUser.credentials) ? currentUser.credentials : [];
+  if (!credentialList) return;
 
   credentialList.innerHTML = '';
   if (!credentials.length) {
@@ -289,7 +661,7 @@ function renderCredentialList() {
     return;
   }
 
-  credentials.forEach((credential, index) => {
+  credentials.forEach((credential) => {
     const credentialItem = document.createElement('div');
     credentialItem.className = 'credential-item';
 
@@ -299,8 +671,8 @@ function renderCredentialList() {
     const radio = document.createElement('input');
     radio.type = 'radio';
     radio.name = 'deliveryCredential';
-    radio.value = index;
-    if (currentUser.selectedCredential === index) radio.checked = true;
+    radio.value = credential.id;
+    if (selectedCredentialId === credential.id) radio.checked = true;
 
     const details = document.createElement('div');
     details.className = 'credential-details';
@@ -320,13 +692,13 @@ function renderCredentialList() {
     editBtn.type = 'button';
     editBtn.className = 'btn credential-edit-btn';
     editBtn.textContent = 'Edit';
-    editBtn.dataset.index = index;
+    editBtn.dataset.id = credential.id;
 
     const deleteBtn = document.createElement('button');
     deleteBtn.type = 'button';
     deleteBtn.className = 'btn credential-delete-btn';
     deleteBtn.textContent = 'Delete';
-    deleteBtn.dataset.index = index;
+    deleteBtn.dataset.id = credential.id;
 
     actions.appendChild(editBtn);
     actions.appendChild(deleteBtn);
@@ -339,20 +711,20 @@ function renderCredentialList() {
   const radioButtons = credentialList.querySelectorAll('input[name="deliveryCredential"]');
   radioButtons.forEach((button) => {
     button.addEventListener('change', () => {
-      currentUser.selectedCredential = Number(button.value);
-      saveState();
+      selectedCredentialId = button.value;
+      localStorage.setItem('pcroverbaliwagSelectedCredential', selectedCredentialId || '');
     });
   });
 
   const editButtons = credentialList.querySelectorAll('.credential-edit-btn');
   editButtons.forEach((btn) => {
     btn.addEventListener('click', (e) => {
-      const idx = Number(e.target.dataset.index);
-      if (!Number.isFinite(idx) || !currentUser.credentials[idx]) return;
-      const cred = currentUser.credentials[idx];
+      const id = e.target.dataset.id;
+      const cred = credentials.find((c) => c.id === id);
+      if (!cred) return;
       credentialPhoneInput.value = cred.phone;
       credentialAddressInput.value = cred.address;
-      editingCredentialIndex = idx;
+      editingCredentialId = id;
       if (addCredentialBtn) addCredentialBtn.textContent = 'Save';
       window.scrollTo({ top: credentialList.getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' });
     });
@@ -360,37 +732,29 @@ function renderCredentialList() {
 
   const deleteButtons = credentialList.querySelectorAll('.credential-delete-btn');
   deleteButtons.forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      const idx = Number(e.target.dataset.index);
-      if (!Number.isFinite(idx) || !currentUser.credentials[idx]) return;
+    btn.addEventListener('click', async (e) => {
+      const id = e.target.dataset.id;
       if (!confirm('Delete this delivery credential?')) return;
-      currentUser.credentials.splice(idx, 1);
-      if (currentUser.selectedCredential === idx) {
-        currentUser.selectedCredential = null;
-      } else if (typeof currentUser.selectedCredential === 'number' && currentUser.selectedCredential > idx) {
-        currentUser.selectedCredential -= 1;
-      }
-      saveState();
-      renderCredentialList();
-      renderCredentialSelect();
+      const ok = await deleteCredential(id);
+      if (!ok) return;
+      await loadCredentials();
     });
   });
 }
 
 function renderCredentialSelect() {
-  if (!currentUser || !credentialSelect) return;
-  const credentials = Array.isArray(currentUser.credentials) ? currentUser.credentials : [];
+  if (!credentialSelect) return;
 
   credentialSelect.innerHTML = '';
-  credentials.forEach((credential, index) => {
+  credentials.forEach((credential) => {
     const option = document.createElement('option');
-    option.value = index;
+    option.value = credential.id;
     option.textContent = `${credential.phone} - ${credential.address}`;
     credentialSelect.appendChild(option);
   });
 
-  if (typeof currentUser.selectedCredential === 'number' && currentUser.selectedCredential >= 0) {
-    credentialSelect.value = currentUser.selectedCredential;
+  if (selectedCredentialId) {
+    credentialSelect.value = selectedCredentialId;
   }
 }
 
@@ -398,12 +762,11 @@ function populateAccountForm() {
   if (!currentUser || !accountNameInput || !accountEmailInput) return;
   accountNameInput.value = currentUser.name;
   accountEmailInput.value = currentUser.email;
-  if (accountPhoneInput) accountPhoneInput.value = currentUser.phone || ''; 
-  if (!Array.isArray(currentUser.credentials)) {
-    currentUser.credentials = [];
-  }
+  if (accountPhoneInput) accountPhoneInput.value = currentUser.phone || '';
   renderCredentialList();
 }
+
+// ---------- Init ----------
 
 function init() {
   loadState();
@@ -412,31 +775,17 @@ function init() {
   }
   updateCartCount();
   setActiveNavLink();
-  updateIndexPageView();
 
-  if (openCategoriesHeroBtn) {
-    openCategoriesHeroBtn.addEventListener('click', () => {
-      if (!requireSignIn()) return;
-      window.location.href = 'categories.html';
+  if (supabase) {
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        await handleSignedIn(session.user);
+        closePanel(signInModal);
+      } else {
+        clearUser();
+      }
     });
-  }
-
-  if (cartLinks.length) {
-    cartLinks.forEach((link) => {
-      link.addEventListener('click', (event) => {
-        if (!isSignedIn) {
-          event.preventDefault();
-          openPanel(signInModal);
-        }
-      });
-    });
-  }
-
-  const guestSignInBtn = document.getElementById('guestSignInBtn');
-  if (guestSignInBtn) {
-    guestSignInBtn.addEventListener('click', () => {
-      openPanel(signInModal);
-    });
+    loadProducts();
   }
 
   if (overlay) {
@@ -459,41 +808,88 @@ function init() {
     closeProductModalBtn.addEventListener('click', () => closePanel(productModal));
   }
 
-  if (signInForm) {
-    signInForm.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const email = document.getElementById('signInEmail').value;
-      
-      const name = email.split('@')[0].replace(/[.\-_]/g, ' ');
-      
-      const user = {
-        name: name
-          .split(' ')
-          .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-          .join(' '),
-        email,
-        phone: '', 
-        credentials: [],
-        selectedCredential: null,
-      };
+  if (toggleSignUpBtn) {
+    toggleSignUpBtn.addEventListener('click', () => {
+      setSignInMode(!isSignUpMode);
+    });
+  }
 
-      setSignedInState(user);
-      closePanel(signInModal);
-      updateIndexPageView();
+  if (signInForm) {
+    signInForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      clearFormError();
+      const email = signInEmail.value.trim();
+      const password = signInPassword.value;
+      const submitBtn = document.getElementById('signInSubmitBtn');
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Please wait...';
+      }
+
+      if (isSignUpMode) {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { name: deriveName(email) } },
+        });
+        if (error) {
+          showFormError(error.message);
+        } else if (!data.session) {
+          showFormError('Account created! Check your email to confirm, then sign in.', true);
+          setSignInMode(false);
+          closePanel(signInModal);
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          showFormError('Invalid email or password. If you are new, choose "Create one" below.');
+        }
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = isSignUpMode ? 'Create Account' : 'Sign In';
+      }
+    });
+  }
+
+  if (togglePasswordBtn && signInPassword) {
+    togglePasswordBtn.addEventListener('click', () => {
+      const isHidden = signInPassword.type === 'password';
+      signInPassword.type = isHidden ? 'text' : 'password';
+      togglePasswordBtn.textContent = isHidden ? 'Hide' : 'Show';
+    });
+  }
+
+  if (forgotPasswordBtn && signInEmail) {
+    forgotPasswordBtn.addEventListener('click', async () => {
+      clearFormError();
+      const email = signInEmail.value.trim();
+      if (!email || !isValidEmail(email)) {
+        showFormError('Enter a valid email address to receive a reset link.');
+        return;
+      }
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) {
+        showFormError(error.message);
+        return;
+      }
+      showFormError('Password reset link sent. Check your inbox.', true);
     });
   }
 
   if (paymentForm) {
-    paymentForm.addEventListener('submit', (event) => {
+    paymentForm.addEventListener('submit', async (event) => {
       event.preventDefault();
-      if (!currentUser || !Array.isArray(currentUser.credentials) || !currentUser.credentials.length) {
+      if (!credentials.length) {
         alert('No delivery credentials available. Please add one in your account.');
         return;
       }
 
       const method = paymentMethod?.value || 'cod';
-      const selectedIndex = Number(credentialSelect?.value);
-      const selectedCredential = currentUser.credentials[selectedIndex];
+      const selectedId = credentialSelect?.value;
+      const selectedCredential = credentials.find((c) => c.id === selectedId) || credentials[0];
       if (!selectedCredential) {
         alert('Please choose a delivery credential.');
         return;
@@ -506,33 +902,53 @@ function init() {
         return;
       }
 
+      const total = selectedItems.reduce((sum, item) => {
+        const value = Number(item.value);
+        return sum + (Number.isFinite(value) ? value : 0);
+      }, 0);
+
+      const ok = await placeOrder(selectedItems, total, method, selectedCredential);
+      if (!ok) return;
+
       cart = cart.filter((item) => !item.selected);
       saveState();
       updateCartCount();
       renderCartPage();
       closePanel(paymentModal);
-      alert(`Order placed with ${method === 'gcash' ? 'GCash' : 'Cash on Delivery'} using ${selectedCredential.phone} / ${selectedCredential.address}.`);
+      alert(
+        `Order placed with ${method === 'gcash' ? 'GCash' : 'Cash on Delivery'} using ${selectedCredential.phone} / ${selectedCredential.address}.`
+      );
+      loadOrders();
     });
   }
 
   if (accountForm) {
-    accountForm.addEventListener('submit', (event) => {
+    accountForm.addEventListener('submit', async (event) => {
       event.preventDefault();
-      if (accountNameInput && accountEmailInput && currentUser) {
-        currentUser.name = accountNameInput.value;
-        currentUser.email = accountEmailInput.value;
-        if (accountPhoneInput) currentUser.phone = accountPhoneInput.value; 
-        accountStatus.textContent = `Hi, ${currentUser.name.split(' ')[0]}`;
-        saveState();
-        renderCredentialList();
+      if (!accountNameInput || !accountEmailInput || !currentUser) return;
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          name: accountNameInput.value.trim(),
+          phone: accountPhoneInput ? accountPhoneInput.value.trim() : '',
+        })
+        .eq('id', currentUser.id);
+      if (error) {
+        alert('Failed to save profile: ' + error.message);
+        return;
       }
+      currentUser.name = accountNameInput.value.trim();
+      if (accountPhoneInput) currentUser.phone = accountPhoneInput.value.trim();
+      saveState();
+      if (accountStatus) accountStatus.textContent = `Hi, ${currentUser.name.split(' ')[0]}`;
       alert('Account settings saved.');
     });
   }
 
   if (addCredentialBtn) {
-    addCredentialBtn.addEventListener('click', () => {
-      if (!credentialPhoneInput || !credentialAddressInput || !currentUser) return;
+    addCredentialBtn.addEventListener('click', async () => {
+      if (!credentialPhoneInput || !credentialAddressInput) return;
       const phoneValue = credentialPhoneInput.value.trim();
       const addressValue = credentialAddressInput.value.trim();
       if (!phoneValue || !addressValue) {
@@ -540,30 +956,14 @@ function init() {
         return;
       }
 
-      if (!Array.isArray(currentUser.credentials)) {
-        currentUser.credentials = [];
-      }
-
-      if (editingCredentialIndex !== null && Number.isFinite(editingCredentialIndex)) {
-        currentUser.credentials[editingCredentialIndex] = {
-          phone: phoneValue,
-          address: addressValue,
-        };
-        editingCredentialIndex = null;
-        if (addCredentialBtn) addCredentialBtn.textContent = 'Add Delivery Credential';
-      } else {
-        currentUser.credentials.push({
-          phone: phoneValue,
-          address: addressValue,
-        });
-        currentUser.selectedCredential = currentUser.credentials.length - 1;
-      }
+      const ok = await saveCredential(phoneValue, addressValue);
+      if (!ok) return;
 
       credentialPhoneInput.value = '';
       credentialAddressInput.value = '';
-      saveState();
-      renderCredentialList();
-      renderCredentialSelect();
+      if (addCredentialBtn) addCredentialBtn.textContent = 'Add Delivery Credential';
+      editingCredentialId = null;
+      await loadCredentials();
     });
   }
 
@@ -576,7 +976,7 @@ function init() {
         return;
       }
 
-      if (!currentUser || !Array.isArray(currentUser.credentials) || !currentUser.credentials.length) {
+      if (!credentials.length) {
         alert('Please add at least one delivery credential in your account before checkout.');
         return;
       }
@@ -586,47 +986,26 @@ function init() {
     });
   }
 
-  if (addButtons.length) {
-    addButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        if (!requireSignIn()) return;
+  // --- Add to Cart / view product (delegation; button or tile/card opens the modal) ---
+  document.addEventListener('click', (event) => {
+    const addBtn = event.target.closest('.add-btn');
+    const tile = event.target.closest('[data-id]');
 
-        const card = button.closest('.product-card');
-        const name = card.querySelector('h3').textContent;
-        const desc = card.querySelector('p').textContent;
-        const price = card.querySelector('.product-meta span').textContent;
-        const img = card.querySelector('img');
-        const value = parseCurrencyValue(price);
-
-        currentSelectedProduct = { name, price, value, desc, imgSrc: img.src, imgAlt: img.alt };
-        currentAddButtonEl = button;
-
-        if (modalProductImage) {
-          modalProductImage.src = img.src;
-          modalProductImage.alt = img.alt;
-        }
-        if (modalProductTitle) modalProductTitle.textContent = name;
-        if (modalProductDesc) modalProductDesc.textContent = desc;
-        if (modalProductPrice) modalProductPrice.textContent = price;
-
-        openPanel(productModal);
-      });
-    });
-  }
+    if (addBtn && tile) {
+      if (!requireSignIn()) return;
+      const product = productsMap[tile.dataset.id];
+      if (product) openProductModal(product, addBtn);
+    } else if (tile) {
+      const product = productsMap[tile.dataset.id];
+      if (product) openProductModal(product, null);
+    }
+  });
 
   if (modalAddToCartBtn) {
     modalAddToCartBtn.addEventListener('click', () => {
       if (!currentSelectedProduct) return;
-
-      cart.push({
-        name: currentSelectedProduct.name,
-        price: currentSelectedProduct.price,
-        value: currentSelectedProduct.value,
-        selected: true
-      });
-      
-      saveState();
-      updateCartCount();
+      if (!requireSignIn()) return;
+      addToCart(currentSelectedProduct);
 
       if (currentAddButtonEl) {
         currentAddButtonEl.textContent = 'Added';
@@ -643,15 +1022,8 @@ function init() {
   if (modalCheckoutBtn) {
     modalCheckoutBtn.addEventListener('click', () => {
       if (!currentSelectedProduct) return;
-
-      cart.push({
-        name: currentSelectedProduct.name,
-        price: currentSelectedProduct.price,
-        value: currentSelectedProduct.value,
-        selected: true
-      });
-      
-      saveState();
+      if (!requireSignIn()) return;
+      addToCart(currentSelectedProduct);
       window.location.href = 'cart.html';
     });
   }
@@ -681,10 +1053,13 @@ function init() {
   });
 
   if (signOutBtn) {
-    signOutBtn.addEventListener('click', () => {
-      localStorage.removeItem('pcroverbaliwagUser');
-      isSignedIn = false;
-      currentUser = null;
+    signOutBtn.addEventListener('click', async () => {
+      try {
+        await supabase.auth.signOut();
+      } catch (err) {
+        console.error('signOut error', err);
+      }
+      clearUser();
       alert('You have been signed out.');
       window.location.href = 'index.html';
     });
@@ -694,7 +1069,6 @@ function init() {
   enforceProtectedPageAccess();
   openSignInIfRequested();
   populateAccountForm();
-  updateIndexPageView();
   renderCartPage();
 
   if (year) {
