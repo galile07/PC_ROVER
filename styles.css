@@ -23,12 +23,27 @@
   box-sizing: border-box;
 }
 
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
   color: var(--gray-900);
   background: linear-gradient(180deg, #f8fbff 0%, var(--white) 100%);
   line-height: 1.6;
+}
+
+body.modal-open {
+  overflow: hidden;
 }
 
 a {

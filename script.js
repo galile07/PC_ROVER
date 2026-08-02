@@ -574,6 +574,7 @@ function addToCart(product) {
 function openPanel(panel) {
   if (!panel) return;
   panel.classList.remove('hidden');
+  document.body.classList.add('modal-open');
   if (overlay) {
     overlay.classList.remove('hidden');
   }
@@ -582,6 +583,9 @@ function openPanel(panel) {
 function closePanel(panel) {
   if (!panel) return;
   panel.classList.add('hidden');
+  if (!document.querySelector('.modal:not(.hidden)')) {
+    document.body.classList.remove('modal-open');
+  }
   if (overlay) {
     overlay.classList.add('hidden');
   }
