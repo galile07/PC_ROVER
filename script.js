@@ -970,9 +970,21 @@ function init() {
         sendCodeBtn.textContent = 'Send code';
         return;
       }
-      sendCodeBtn.disabled = false;
-      sendCodeBtn.textContent = 'Resend code';
       showSignUpError('A 6-digit code was sent to ' + email + '. Enter it below to continue.', true);
+
+      let remaining = 60;
+      const countdown = () => {
+        if (remaining <= 0) {
+          sendCodeBtn.disabled = false;
+          sendCodeBtn.textContent = 'Send code';
+          return;
+        }
+        sendCodeBtn.disabled = true;
+        sendCodeBtn.textContent = 'Resend code in ' + remaining + 's';
+        remaining -= 1;
+        setTimeout(countdown, 1000);
+      };
+      countdown();
     });
   }
 
