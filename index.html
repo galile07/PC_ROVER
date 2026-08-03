@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=8" />
+    <link rel="stylesheet" href="styles.css?v=9" />
   </head>
   <body>
     <header class="topbar" id="topbar">
@@ -110,7 +110,7 @@
       <div class="modal-card">
         <button class="modal-close" id="closeProductModalBtn">×</button>
         <div class="product-modal-content">
-          <img id="modalProductImage" src="" alt="Product Image" style="width: 100%; border-radius: 8px; margin-bottom: 1rem; max-height: 250px; object-fit: cover;" />
+          <img id="modalProductImage" src="" alt="Product Image" onerror="imgFallback(this, this.dataset.fallback)" style="width: 100%; border-radius: 8px; margin-bottom: 1rem; max-height: 250px; object-fit: cover;" />
           <h2 id="modalProductTitle" style="margin-bottom: 0.5rem; font-size: 1.5rem;"></h2>
           <p id="modalProductDesc" style="color: #666; margin-bottom: 1rem;"></p>
           <strong id="modalProductPrice" style="font-size: 1.25rem; display: block; margin-bottom: 1.5rem;"></strong>
@@ -125,6 +125,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabaseConfig.js"></script>
-    <script src="script.js?v=8"></script>
+    <script src="script.js?v=9"></script>
   </body>
 </html>

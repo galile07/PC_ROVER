@@ -91,6 +91,21 @@ const IMAGE_POOL = [
   '1587202372775-e229f172b9d7',
 ];
 
+const PRODUCT_IMAGE_IDS = {
+  'mechanical keyboard': '1756388371735-cc845c578200',
+  'gaming mouse': '1616296425622-4560a2ad83de',
+  '27 monitor': '1674621702671-5b92364391f2',
+  'laptop stand': '1652198144911-4f204ccf35e6',
+  'gaming headset': '1566055972289-c52022ae23b7',
+  'webcam hd': '1642083139428-9ee5fa423c46',
+  'bluetooth speaker': '1511499271651-073325718d90',
+  'ssd 1tb': '1757083840018-cd665233a112',
+  'usb c hub': '1760376789478-c1023d2dc007',
+  printer: '1612815154858-60aa4c59eaa6',
+  'mouse pad': '1569050806800-0d6be7035923',
+  'extension cord': '1565049981953-379c9c2a5d48',
+};
+
 function hashString(str) {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -99,16 +114,39 @@ function hashString(str) {
   return Math.abs(hash);
 }
 
+function normalizeProductName(name) {
+  return String(name || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function unsplashImage(seed, width) {
   const id = IMAGE_POOL[hashString(String(seed)) % IMAGE_POOL.length];
-  return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${width}&q=80`;
+  return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${width}&q=80&ixlib=rb-4.1.0`;
 }
 
 function productImage(product, width) {
   if (product.image) {
     return escapeHtml(product.image);
   }
+  const normalized = normalizeProductName(product.name);
+  const keys = Object.keys(PRODUCT_IMAGE_IDS).sort((a, b) => b.length - a.length);
+  for (const key of keys) {
+    if (normalized.includes(key)) {
+      const id = PRODUCT_IMAGE_IDS[key];
+      return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${width}&q=80&ixlib=rb-4.1.0`;
+    }
+  }
   return unsplashImage(product.name, width);
+}
+
+function imgFallback(img, url) {
+  if (!img.dataset.fb && url) {
+    img.dataset.fb = '1';
+    img.src = url;
+  }
 }
 
 function formatCurrency(value) {
@@ -324,7 +362,7 @@ function productDescription(product) {
 function productCard(product) {
   return `
     <article class="product-card" data-id="${escapeHtml(product.id)}">
-      <img src="${productImage(product, 600)}" alt="${escapeHtml(product.name)}" loading="lazy" />
+      <img src="${productImage(product, 600)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="imgFallback(this, '${unsplashImage('fallback-' + product.name, 600)}')" />
       <div class="product-info">
         <h3>${escapeHtml(product.name)}</h3>
         <p>${productDescription(product)}</p>
@@ -343,7 +381,7 @@ function masonryTile(product, index) {
   const height = MASONRY_HEIGHTS[index % MASONRY_HEIGHTS.length];
   return `
     <button type="button" class="masonry-tile" data-id="${escapeHtml(product.id)}" style="height:${height}px">
-      <img src="${productImage(product, 400)}" alt="${escapeHtml(product.name)}" loading="lazy" />
+      <img src="${productImage(product, 400)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="imgFallback(this, '${unsplashImage('fallback-' + product.name, 400)}')" />
     </button>
   `;
 }
@@ -619,6 +657,8 @@ function openProductModal(product, addButtonEl) {
   if (modalProductImage) {
     modalProductImage.src = currentSelectedProduct.imgSrc;
     modalProductImage.alt = currentSelectedProduct.imgAlt;
+    modalProductImage.dataset.fallback = unsplashImage('fallback-' + currentSelectedProduct.name, 900);
+    modalProductImage.dataset.fb = '';
   }
   if (modalProductTitle) modalProductTitle.textContent = currentSelectedProduct.name;
   if (modalProductDesc) modalProductDesc.textContent = currentSelectedProduct.desc;
