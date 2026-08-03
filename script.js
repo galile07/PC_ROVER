@@ -15,7 +15,8 @@ const categoryTabs = document.getElementById('categoryTabs');
 const accountTabs = document.getElementById('accountTabs');
 const cartTabs = document.getElementById('cartTabs');
 
-const signInForm = document.getElementById('signInForm');
+const loginForm = document.getElementById('loginForm');
+const signUpForm = document.getElementById('signUpForm');
 const accountForm = document.getElementById('accountForm');
 const accountNameInput = document.getElementById('accountName');
 const accountEmailInput = document.getElementById('accountEmail');
@@ -47,6 +48,13 @@ const togglePasswordBtn = document.getElementById('togglePasswordBtn');
 const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
 const signInError = document.getElementById('signInError');
 const shopNowBtn = document.getElementById('shopNowBtn');
+const signUpName = document.getElementById('signUpName');
+const signUpEmail = document.getElementById('signUpEmail');
+const signUpCode = document.getElementById('signUpCode');
+const signUpPassword = document.getElementById('signUpPassword');
+const signUpConfirmPassword = document.getElementById('signUpConfirmPassword');
+const sendCodeBtn = document.getElementById('sendCodeBtn');
+const signUpError = document.getElementById('signUpError');
 
 // --- Supabase Client ---
 const SUPABASE_URL = window.SUPABASE_URL || '';
@@ -193,6 +201,29 @@ function clearFormError() {
     signInError.classList.add('hidden');
     signInError.classList.remove('form-success');
   }
+  if (signUpError) {
+    signUpError.textContent = '';
+    signUpError.classList.add('hidden');
+    signUpError.classList.remove('form-success');
+  }
+}
+
+function showSignUpError(message, isSuccess) {
+  if (signUpError) {
+    signUpError.textContent = message;
+    signUpError.classList.remove('hidden');
+    signUpError.classList.toggle('form-success', Boolean(isSuccess));
+  } else {
+    alert(message);
+  }
+}
+
+function clearSignUpError() {
+  if (signUpError) {
+    signUpError.textContent = '';
+    signUpError.classList.add('hidden');
+    signUpError.classList.remove('form-success');
+  }
 }
 
 function loadState() {
@@ -299,13 +330,14 @@ function setSignInMode(signUp) {
   isSignUpMode = signUp;
   const title = document.getElementById('signInTitle');
   const note = document.getElementById('signInNote');
-  const submitBtn = document.getElementById('signInSubmitBtn');
+
+  if (loginForm) loginForm.classList.toggle('hidden', signUp);
+  if (signUpForm) signUpForm.classList.toggle('hidden', !signUp);
 
   if (title) title.textContent = signUp ? 'Create your account' : 'Access your account';
-  if (submitBtn) submitBtn.textContent = signUp ? 'Create Account' : 'Sign In';
   if (note) {
     note.textContent = signUp
-      ? 'Your account will be ready after you confirm your email.'
+      ? 'Enter your details and we will email you a code to verify your account.'
       : 'Sign in to access your cart, orders, and account.';
   }
   if (toggleSignUpBtn) {
@@ -892,8 +924,8 @@ function init() {
     });
   }
 
-  if (signInForm) {
-    signInForm.addEventListener('submit', async (event) => {
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       clearFormError();
       const email = signInEmail.value.trim();
@@ -905,29 +937,116 @@ function init() {
         submitBtn.textContent = 'Please wait...';
       }
 
-      if (isSignUpMode) {
-        const { data, error } = await supabaseClient.auth.signUp({
-          email,
-          password,
-          options: { data: { name: deriveName(email) } },
-        });
-        if (error) {
-          showFormError(error.message);
-        } else if (!data.session) {
-          showFormError('Account created! Check your email to confirm, then sign in.', true);
-          setSignInMode(false);
-          closePanel(signInModal);
-        }
-      } else {
-        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) {
-          showFormError('Invalid email or password. If you are new, choose "Create one" below.');
-        }
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) {
+        showFormError('Invalid email or password. If you are new, choose "Create one" below.');
       }
 
       if (submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.textContent = isSignUpMode ? 'Create Account' : 'Sign In';
+        submitBtn.textContent = 'Sign In';
+      }
+    });
+  }
+
+  if (sendCodeBtn) {
+    sendCodeBtn.addEventListener('click', async () => {
+      clearSignUpError();
+      const email = signUpEmail.value.trim();
+      if (!isValidEmail(email)) {
+        showSignUpError('Enter a valid email address first, then press "Send code".');
+        signUpEmail.focus();
+        return;
+      }
+      sendCodeBtn.disabled = true;
+      sendCodeBtn.textContent = 'Sending...';
+      const { error } = await supabaseClient.auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: true },
+      });
+      if (error) {
+        showSignUpError(error.message || 'Could not send the code. Try again.');
+        sendCodeBtn.disabled = false;
+        sendCodeBtn.textContent = 'Send code';
+        return;
+      }
+      sendCodeBtn.disabled = false;
+      sendCodeBtn.textContent = 'Resend code';
+      showSignUpError('A 6-digit code was sent to ' + email + '. Enter it below to continue.', true);
+    });
+  }
+
+  if (signUpForm) {
+    signUpForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      clearSignUpError();
+      const name = signUpName.value.trim();
+      const email = signUpEmail.value.trim();
+      const code = signUpCode.value.trim();
+      const password = signUpPassword.value;
+      const confirmPassword = signUpConfirmPassword.value;
+      const submitBtn = document.getElementById('signUpSubmitBtn');
+
+      if (!name) {
+        showSignUpError('Enter your name.');
+        signUpName.focus();
+        return;
+      }
+      if (!isValidEmail(email)) {
+        showSignUpError('Enter a valid email address.');
+        signUpEmail.focus();
+        return;
+      }
+      if (!code) {
+        showSignUpError('Press "Send code", then enter the 6-digit code we emailed you.');
+        return;
+      }
+      if (password.length < 6) {
+        showSignUpError('Password must be at least 6 characters.');
+        signUpPassword.focus();
+        return;
+      }
+      if (password !== confirmPassword) {
+        showSignUpError('Passwords do not match.');
+        signUpConfirmPassword.focus();
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Please wait...';
+      }
+
+      const { data, error } = await supabaseClient.auth.verifyOtp({
+        email,
+        token: code,
+        type: 'email',
+      });
+      if (error) {
+        showSignUpError(error.message || 'Verification failed. Check the code and try again.');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Create Account';
+        }
+        return;
+      }
+
+      const passwordRes = await supabaseClient.auth.updateUser({ password });
+      if (passwordRes.error) {
+        showSignUpError(passwordRes.error.message || 'Account created but password could not be set.');
+        return;
+      }
+      const nameRes = await supabaseClient.auth.updateUser({ data: { full_name: name } });
+      if (nameRes.error) {
+        showSignUpError(nameRes.error.message || 'Account created but name could not be saved.');
+        return;
+      }
+
+      if (data.user) {
+        const profile = await ensureProfile(data.user);
+        if (profile) {
+          await supabaseClient.from('profiles').update({ name }).eq('id', data.user.id);
+        }
       }
     });
   }

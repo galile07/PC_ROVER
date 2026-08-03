@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=10" />
+    <link rel="stylesheet" href="styles.css?v=11" />
   </head>
   <body>
     <header class="topbar" id="topbar">
@@ -81,7 +81,7 @@
         </div>
         <p class="eyebrow">Account</p>
         <h2 id="signInTitle">Access your account</h2>
-        <form id="signInForm" class="form-card">
+        <form id="loginForm" class="form-card">
           <label>
             Email address
             <input type="email" id="signInEmail" placeholder="you@example.com" autocomplete="email" required />
@@ -98,7 +98,33 @@
           </div>
           <p class="form-error hidden" id="signInError"></p>
           <button type="submit" class="btn btn-primary" id="signInSubmitBtn">Sign In</button>
-
+        </form>
+        <form id="signUpForm" class="form-card hidden">
+          <label>
+            Name
+            <input type="text" id="signUpName" placeholder="Full name" autocomplete="name" required />
+          </label>
+          <label>
+            Email address
+            <input type="email" id="signUpEmail" placeholder="you@example.com" autocomplete="email" required />
+          </label>
+          <label>
+            Verification code
+            <div class="password-input-wrap">
+              <input type="text" id="signUpCode" placeholder="6-digit code" inputmode="numeric" autocomplete="one-time-code" required />
+              <button type="button" class="password-toggle" id="sendCodeBtn">Send code</button>
+            </div>
+          </label>
+          <label>
+            Password
+            <input type="password" id="signUpPassword" placeholder="••••••••" autocomplete="new-password" required />
+          </label>
+          <label>
+            Confirm password
+            <input type="password" id="signUpConfirmPassword" placeholder="••••••••" autocomplete="new-password" required />
+          </label>
+          <p class="form-error hidden" id="signUpError"></p>
+          <button type="submit" class="btn btn-primary" id="signUpSubmitBtn">Create Account</button>
         </form>
         <button type="button" id="toggleSignUpBtn" class="modal-link">No account? Create one</button>
         <p class="modal-note" id="signInNote">Sign in to access your cart, orders, and account.</p>
@@ -125,6 +151,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabaseConfig.js"></script>
-    <script src="script.js?v=10"></script>
+    <script src="script.js?v=11"></script>
   </body>
 </html>
