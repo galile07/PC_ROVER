@@ -153,18 +153,6 @@ img {
   color: var(--orange-dark);
 }
 
-.btn-google {
-  background: var(--white);
-  color: var(--gray-900, #111827);
-  border: 1px solid var(--gray-200, #e5e7eb);
-  gap: 0.5rem;
-}
-
-.btn-google:hover {
-  border-color: #d1d5db;
-  box-shadow: 0 4px 12px rgba(17, 24, 39, 0.08);
-}
-
 .btn-dark {
   background: #0a0a0a;
   color: var(--white);

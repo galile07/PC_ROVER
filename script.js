@@ -46,7 +46,6 @@ const signInPassword = document.getElementById('signInPassword');
 const togglePasswordBtn = document.getElementById('togglePasswordBtn');
 const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
 const signInError = document.getElementById('signInError');
-const googleSignInBtn = document.getElementById('googleSignInBtn');
 const shopNowBtn = document.getElementById('shopNowBtn');
 
 // --- Supabase Client ---
@@ -955,23 +954,6 @@ function init() {
         return;
       }
       showFormError('Password reset link sent. Check your inbox.', true);
-    });
-  }
-
-  if (googleSignInBtn) {
-    googleSignInBtn.addEventListener('click', async () => {
-      clearFormError();
-      try {
-        const { error } = await supabaseClient.auth.signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo: window.location.origin + window.location.pathname },
-        });
-        if (error) {
-          showFormError(error.message);
-        }
-      } catch (err) {
-        showFormError(err.message || 'Google sign-in could not be started.');
-      }
     });
   }
 
