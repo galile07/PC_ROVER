@@ -284,6 +284,7 @@ async function ensureProfile(authUser) {
 function setSignedInState(user) {
   isSignedIn = true;
   currentUser = user;
+  document.body.classList.add('signed-in');
   if (accountStatus) {
     accountStatus.textContent = `Hi, ${user.name.split(' ')[0]}`;
     accountStatus.classList.remove('hidden');
@@ -300,6 +301,7 @@ function clearUser() {
   isSignedIn = false;
   currentUser = null;
   credentials = [];
+  document.body.classList.remove('signed-in');
   localStorage.removeItem('pcroverbaliwagUser');
   localStorage.removeItem('pcroverbaliwagSelectedCredential');
   selectedCredentialId = null;

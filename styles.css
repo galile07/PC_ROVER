@@ -238,6 +238,24 @@ img {
   border-radius: 1.5rem;
 }
 
+/* Signed-in: remove hero copy/CTA and show products full width */
+body.signed-in .hero {
+  padding-top: 2rem;
+}
+
+body.signed-in .hero-copy {
+  display: none;
+}
+
+body.signed-in .hero-grid {
+  grid-template-columns: 1fr;
+}
+
+body.signed-in .hero-masonry {
+  max-height: none;
+  overflow-y: visible;
+}
+
 .masonry {
   columns: 3;
   column-gap: 0.75rem;
