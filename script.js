@@ -366,6 +366,7 @@ async function loadProducts() {
     .from('inventory')
     .select('*')
     .eq('enabled', true)
+    .gt('stock', 0)
     .order('id', { ascending: true });
   if (error) {
     console.error('loadProducts', error);
@@ -385,6 +386,7 @@ async function loadProducts() {
     .from('imported_products')
     .select('*')
     .eq('enabled', true)
+    .gt('stock', 0)
     .order('id', { ascending: true });
   if (!impError) {
     (imported || []).forEach((product) => {
