@@ -442,6 +442,10 @@ function masonryTile(product, index) {
   return `
     <button type="button" class="masonry-tile" data-id="${escapeHtml(product._key || product.id)}" style="height:${height}px">
       <img src="${productImage(product, 400)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="imgFallback(this, '${unsplashImage('fallback-' + product.name, 400)}')" />
+      <span class="masonry-tile-info">
+        <strong>${escapeHtml(product.name)}</strong>
+        <em>${formatCurrency(product.price)}</em>
+      </span>
     </button>
   `;
 }
