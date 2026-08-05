@@ -364,10 +364,24 @@ async function loadProducts() {
     return;
   }
   productsMap = {};
-  (data || []).forEach((product) => {
-    productsMap[String(product.id)] = product;
+  const list = (data || []).map((product) => {
+    product._key = String(product.id);
+    productsMap[product._key] = product;
+    return product;
   });
-  renderProducts(data || []);
+  const { data: imported, error: impError } = await supabaseClient
+    .from('imported_products')
+    .select('*')
+    .eq('enabled', true)
+    .order('id', { ascending: true });
+  if (!impError) {
+    (imported || []).forEach((product) => {
+      product._key = 'imp-' + product.id;
+      productsMap[product._key] = product;
+      list.push(product);
+    });
+  }
+  renderProducts(list);
 }
 
 function productFallbackDescription(product) {
@@ -394,7 +408,7 @@ function productDescription(product) {
 
 function productCard(product) {
   return `
-    <article class="product-card" data-id="${escapeHtml(product.id)}">
+    <article class="product-card" data-id="${escapeHtml(product._key || product.id)}">
       <img src="${productImage(product, 600)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="imgFallback(this, '${unsplashImage('fallback-' + product.name, 600)}')" />
       <div class="product-info">
         <h3>${escapeHtml(product.name)}</h3>
@@ -413,7 +427,7 @@ const MASONRY_HEIGHTS = [180, 240, 200, 260, 190, 250, 210, 170, 230, 220];
 function masonryTile(product, index) {
   const height = MASONRY_HEIGHTS[index % MASONRY_HEIGHTS.length];
   return `
-    <button type="button" class="masonry-tile" data-id="${escapeHtml(product.id)}" style="height:${height}px">
+    <button type="button" class="masonry-tile" data-id="${escapeHtml(product._key || product.id)}" style="height:${height}px">
       <img src="${productImage(product, 400)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="imgFallback(this, '${unsplashImage('fallback-' + product.name, 400)}')" />
     </button>
   `;

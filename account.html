@@ -1,4 +1,4 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=15" />
+    <link rel="stylesheet" href="styles.css?v=16" />
   </head>
   <body>
     <header class="topbar" id="topbar">
@@ -99,7 +99,7 @@
               <form class="form-card">
                 <label>
                   New password
-                  <input type="password" id="accountPassword" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" />
+                  <input type="password" id="accountPassword" placeholder="••••••••" />
                 </label>
                 <label>
                   Two-factor authentication
@@ -118,7 +118,7 @@
 
     <footer class="footer">
       <div class="container footer-wrap">
-        <p>Â© <span id="year"></span> PCROVERBALIWAG. All rights reserved.</p>
+        <p>© <span id="year"></span> PCROVERBALIWAG. All rights reserved.</p>
         <div class="footer-links">
           <a href="#">Privacy</a>
           <a href="#">Support</a>
@@ -131,7 +131,7 @@
 
     <div class="modal hidden" id="signInModal">
       <div class="modal-card auth-card">
-        <button class="modal-close" id="closeSignInBtn">Ã—</button>
+        <button class="modal-close" id="closeSignInBtn">×</button>
         <div class="auth-brand">
           <span class="auth-logo">PCROVERBALIWAG</span>
         </div>
@@ -145,7 +145,7 @@
           <label>
             Password
             <div class="password-input-wrap">
-              <input type="password" id="signInPassword" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autocomplete="current-password" required />
+              <input type="password" id="signInPassword" placeholder="••••••••" autocomplete="current-password" required />
               <button type="button" class="password-toggle" id="togglePasswordBtn">Show</button>
             </div>
           </label>
@@ -173,11 +173,11 @@
           </label>
           <label>
             Password
-            <input type="password" id="signUpPassword" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autocomplete="new-password" required />
+            <input type="password" id="signUpPassword" placeholder="••••••••" autocomplete="new-password" required />
           </label>
           <label>
             Confirm password
-            <input type="password" id="signUpConfirmPassword" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autocomplete="new-password" required />
+            <input type="password" id="signUpConfirmPassword" placeholder="••••••••" autocomplete="new-password" required />
           </label>
           <p class="form-error hidden" id="signUpError"></p>
           <button type="submit" class="btn btn-primary" id="signUpSubmitBtn">Create Account</button>
@@ -189,6 +189,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabaseConfig.js"></script>
-    <script src="script.js?v=15"></script>
+    <script src="script.js?v=16"></script>
   </body>
 </html>
