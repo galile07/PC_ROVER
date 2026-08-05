@@ -360,8 +360,42 @@ function setSignInMode(signUp) {
 
 // ---------- Products ----------
 
+let _rulesCache = null;
+
+async function getAutoRules() {
+  if (_rulesCache) return _rulesCache;
+  const raw = localStorage.getItem('pcroverAutoRules');
+  const local = raw ? JSON.parse(raw) : null;
+  if (local && local.length) { _rulesCache = local; return local; }
+  if (!supabaseClient) return _rulesCache || [];
+  try {
+    const { data } = await supabaseClient.from('auto_rules').select('*').order('id');
+    _rulesCache = data || [];
+    if (_rulesCache.length) localStorage.setItem('pcroverAutoRules', JSON.stringify(_rulesCache));
+    return _rulesCache;
+  } catch (e) { return _rulesCache || []; }
+}
+
+function applyAutoRules(product) {
+  const rules = (_rulesCache || []).filter((r) => r.enabled);
+  let price = Number(product.price) || 0;
+  rules.forEach((r) => {
+    let match = false;
+    const val = r.field === 'stock' ? Number(product.stock) || 0 : 0;
+    if (r.operator === 'greater' && val > Number(r.value)) match = true;
+    if (r.operator === 'less' && val < Number(r.value)) match = true;
+    if (r.operator === 'equal' && val === Number(r.value)) match = true;
+    if (match) {
+      const change = r.adjusttype === 'percent' ? (price * Number(r.adjustvalue)) / 100 : Number(r.adjustvalue);
+      price += change;
+    }
+  });
+  return price;
+}
+
 async function loadProducts() {
   if (!supabaseClient) return;
+  await getAutoRules();
   const { data, error } = await supabaseClient
     .from('inventory')
     .select('*')
@@ -379,6 +413,7 @@ async function loadProducts() {
   const list = (data || []).map((product) => {
     product._key = String(product.id);
     product.category = product.category || guessCategory(product.name);
+    product.price = applyAutoRules(product);
     productsMap[product._key] = product;
     return product;
   });
@@ -392,6 +427,7 @@ async function loadProducts() {
     (imported || []).forEach((product) => {
       product._key = 'imp-' + product.id;
       product.category = product.category || guessCategory(product.name);
+      product.price = applyAutoRules(product);
       productsMap[product._key] = product;
       list.push(product);
     });
