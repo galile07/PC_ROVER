@@ -499,6 +499,7 @@ async function placeOrder(items, total, method, credential) {
   if (!supabaseClient || !currentUser) return false;
   const { error } = await supabaseClient.from('orders').insert({
     user_id: currentUser.id,
+    customer_name: currentUser.name || null,
     items: items.map((item) => ({ name: item.name, price: item.price, value: Number(item.value) || 0 })),
     total,
     payment_method: method,

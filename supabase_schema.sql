@@ -112,6 +112,7 @@ create policy "Users can delete their own credentials"
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
+  customer_name text,
   items jsonb not null default '[]'::jsonb,
   total numeric not null default 0,
   payment_method text not null default 'cod',
