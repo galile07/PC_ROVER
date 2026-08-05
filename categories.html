@@ -1,4 +1,4 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=13" />
+    <link rel="stylesheet" href="styles.css?v=14" />
   </head>
   <body>
     <header class="topbar" id="topbar">
@@ -54,22 +54,22 @@
           <div class="tab-panels">
             <div class="tab-panel active" id="computers">
               <div class="product-grid" data-products="computers">
-                <p class="empty-state">Loading productsâ€¦</p>
+                <p class="empty-state">Loading products…</p>
               </div>
             </div>
             <div class="tab-panel" id="accessories">
               <div class="product-grid" data-products="accessories">
-                <p class="empty-state">Loading productsâ€¦</p>
+                <p class="empty-state">Loading products…</p>
               </div>
             </div>
             <div class="tab-panel" id="security">
               <div class="product-grid" data-products="security">
-                <p class="empty-state">Loading productsâ€¦</p>
+                <p class="empty-state">Loading products…</p>
               </div>
             </div>
             <div class="tab-panel" id="preowned">
               <div class="product-grid" data-products="preowned">
-                <p class="empty-state">Loading productsâ€¦</p>
+                <p class="empty-state">Loading products…</p>
               </div>
             </div>
           </div>
@@ -79,7 +79,7 @@
 
     <footer class="footer">
       <div class="container footer-wrap">
-        <p>Â© <span id="year"></span> PCROVERBALIWAG. All rights reserved.</p>
+        <p>© <span id="year"></span> PCROVERBALIWAG. All rights reserved.</p>
         <div class="footer-links">
           <a href="#">Privacy</a>
           <a href="#">Support</a>
@@ -92,7 +92,7 @@
 
     <div class="modal hidden" id="signInModal">
       <div class="modal-card auth-card">
-        <button class="modal-close" id="closeSignInBtn">Ã—</button>
+        <button class="modal-close" id="closeSignInBtn">×</button>
         <div class="auth-brand">
           <span class="auth-logo">PCROVERBALIWAG</span>
         </div>
@@ -106,7 +106,7 @@
           <label>
             Password
             <div class="password-input-wrap">
-              <input type="password" id="signInPassword" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autocomplete="current-password" required />
+              <input type="password" id="signInPassword" placeholder="••••••••" autocomplete="current-password" required />
               <button type="button" class="password-toggle" id="togglePasswordBtn">Show</button>
             </div>
           </label>
@@ -134,11 +134,11 @@
           </label>
           <label>
             Password
-            <input type="password" id="signUpPassword" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autocomplete="new-password" required />
+            <input type="password" id="signUpPassword" placeholder="••••••••" autocomplete="new-password" required />
           </label>
           <label>
             Confirm password
-            <input type="password" id="signUpConfirmPassword" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autocomplete="new-password" required />
+            <input type="password" id="signUpConfirmPassword" placeholder="••••••••" autocomplete="new-password" required />
           </label>
           <p class="form-error hidden" id="signUpError"></p>
           <button type="submit" class="btn btn-primary" id="signUpSubmitBtn">Create Account</button>
@@ -151,7 +151,7 @@
     <!-- Product Modal -->
     <div class="modal hidden" id="productModal">
       <div class="modal-card">
-        <button class="modal-close" id="closeProductModalBtn">Ã—</button>
+        <button class="modal-close" id="closeProductModalBtn">×</button>
         <div class="product-modal-content">
           <img id="modalProductImage" src="" alt="Product Image" onerror="imgFallback(this, this.dataset.fallback)" style="width: 100%; border-radius: 8px; margin-bottom: 1rem; max-height: 250px; object-fit: cover;" />
           <h2 id="modalProductTitle" style="margin-bottom: 0.5rem; font-size: 1.5rem;"></h2>
@@ -168,6 +168,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabaseConfig.js"></script>
-    <script src="script.js?v=13"></script>
+    <script src="script.js?v=14"></script>
   </body>
 </html>

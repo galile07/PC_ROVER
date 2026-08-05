@@ -640,6 +640,35 @@ function addToCart(product) {
   });
   saveState();
   updateCartCount();
+  showToast('A product has successfully added to cart');
+}
+
+// ---------- Toast notifications ----------
+
+let toastContainer = null;
+
+function showToast(message) {
+  if (!toastContainer) {
+    toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container';
+    document.body.appendChild(toastContainer);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML =
+    '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+  const span = document.createElement('span');
+  span.textContent = message;
+  toast.appendChild(span);
+  toastContainer.appendChild(toast);
+
+  requestAnimationFrame(() => toast.classList.add('show'));
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3200);
 }
 
 // ---------- UI helpers ----------
@@ -1134,9 +1163,7 @@ function init() {
       updateCartCount();
       renderCartPage();
       closePanel(paymentModal);
-      alert(
-        `Order placed with ${method === 'gcash' ? 'GCash' : 'Cash on Delivery'} using ${selectedCredential.phone} / ${selectedCredential.address}.`
-      );
+      showToast('Checkout successful');
       loadOrders();
     });
   }
