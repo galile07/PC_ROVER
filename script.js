@@ -129,6 +129,17 @@ function normalizeProductName(name) {
     .trim();
 }
 
+function guessCategory(name) {
+  const n = String(name || '').toLowerCase();
+  const words = n.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
+  const hasAny = (...ws) => ws.some((w) => n.includes(w));
+  const hasWord = (...ws) => ws.some((w) => words.includes(w));
+  if (hasAny('used', 'second hand', '2nd hand', 'preowned', 'pre-owned', 'refurbished')) return 'preowned';
+  if (hasAny('cctv', 'camera', 'dvr', 'nvr', 'alarm', 'doorbell', 'surveillance', 'security', 'sensor', 'ip cam')) return 'security';
+  if (hasWord('monitor', 'ssd', 'hdd', 'printer', 'desktop', 'tower', 'cpu', 'processor', 'ram', 'memory', 'laptop', 'notebook', 'motherboard', 'gpu', 'graphics', 'pc')) return 'computers';
+  return 'accessories';
+}
+
 function unsplashImage(seed, width) {
   const id = IMAGE_POOL[hashString(String(seed)) % IMAGE_POOL.length];
   return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${width}&q=80&ixlib=rb-4.1.0`;
@@ -366,6 +377,7 @@ async function loadProducts() {
   productsMap = {};
   const list = (data || []).map((product) => {
     product._key = String(product.id);
+    product.category = product.category || guessCategory(product.name);
     productsMap[product._key] = product;
     return product;
   });
@@ -377,6 +389,7 @@ async function loadProducts() {
   if (!impError) {
     (imported || []).forEach((product) => {
       product._key = 'imp-' + product.id;
+      product.category = product.category || guessCategory(product.name);
       productsMap[product._key] = product;
       list.push(product);
     });
