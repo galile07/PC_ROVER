@@ -628,6 +628,9 @@ function renderCartPage() {
           <span>${item.price}</span>
         </div>
       </label>
+      <div class="cart-item-thumb">
+        <img src="${productImage(item, 120)}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="imgFallback(this, '${unsplashImage('fallback-' + item.name, 120)}')" />
+      </div>
     `;
     cartItems.appendChild(itemEl);
 
