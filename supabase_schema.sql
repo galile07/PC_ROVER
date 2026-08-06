@@ -124,15 +124,19 @@ create table if not exists public.orders (
 
 create index if not exists orders_user_id_idx on public.orders (user_id);
 
--- Only valid order statuses may be stored. The admin writes these values:
+-- Only valid order statuses may be stored. Two naming conventions are
+-- accepted so the admin and customer sides always agree:
 --   pending    -> customer "Orders" section    (shown as "Pending")
 --   completed  -> customer "To Ship" section    (shown as "Preparing")
+--     (alias: preparing)
 --   shipped    -> customer "To Receive" section (shown as "Shipping")
+--     (alias: shipping)
 --   delivered  -> customer "Finished" section   (shown as "Finished")
+--     (alias: finished)
 alter table public.orders drop constraint if exists orders_status_check;
 alter table public.orders
   add constraint orders_status_check
-  check (status in ('pending', 'completed', 'shipped', 'delivered', 'cancelled'));
+  check (status in ('pending', 'completed', 'preparing', 'shipped', 'shipping', 'delivered', 'finished', 'cancelled'));
 
 alter table public.orders enable row level security;
 

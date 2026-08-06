@@ -80,8 +80,9 @@ const ORDER_STATUS_LABELS = {
   preparing: 'Preparing',
   completed: 'Preparing',
   to_ship: 'To Ship',
-  to_receive: 'Shipping',
+  shipping: 'Shipping',
   shipped: 'Shipping',
+  to_receive: 'Shipping',
   delivered: 'Finished',
   finished: 'Finished',
   cancelled: 'Cancelled',
@@ -628,9 +629,9 @@ function renderOrders(orders) {
   };
 
   renderInto(ordersList, orders.filter((order) => order.status === 'pending'));
-  renderInto(toShipList, orders.filter((order) => order.status === 'completed' || order.status === 'preparing' || order.status === 'to_ship'));
-  renderInto(toReceiveList, orders.filter((order) => order.status === 'shipped' || order.status === 'to_receive'));
-  renderInto(finishedList, orders.filter((order) => order.status === 'delivered' || order.status === 'finished'));
+  renderInto(toShipList, orders.filter((order) => order.status === 'preparing' || order.status === 'completed' || order.status === 'to_ship'));
+  renderInto(toReceiveList, orders.filter((order) => order.status === 'shipping' || order.status === 'shipped' || order.status === 'to_receive'));
+  renderInto(finishedList, orders.filter((order) => order.status === 'finished' || order.status === 'delivered'));
 }
 
 async function loadOrders() {
