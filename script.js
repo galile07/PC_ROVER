@@ -288,7 +288,12 @@ async function ensureProfile(authUser) {
 
   const { data: inserted, error: insertError } = await supabaseClient
     .from('profiles')
-    .insert({ id: authUser.id, email: authUser.email, name: deriveName(authUser.email), phone: '' })
+    .insert({
+      id: authUser.id,
+      email: authUser.email,
+      name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || deriveName(authUser.email),
+      phone: '',
+    })
     .select()
     .single();
   if (insertError) {
@@ -335,7 +340,7 @@ async function handleSignedIn(authUser) {
   const user = {
     id: authUser.id,
     email: authUser.email,
-    name: profile?.name || deriveName(authUser.email),
+    name: profile?.name || authUser.user_metadata?.full_name || authUser.user_metadata?.name || deriveName(authUser.email),
     phone: profile?.phone || '',
   };
   setSignedInState(user);
@@ -1163,6 +1168,18 @@ function init() {
   if (toggleSignUpBtn) {
     toggleSignUpBtn.addEventListener('click', () => {
       setSignInMode(!isSignUpMode);
+    });
+  }
+
+  const googleSignInBtn = document.getElementById('googleSignInBtn');
+  if (googleSignInBtn) {
+    googleSignInBtn.addEventListener('click', () => {
+      clearFormError();
+      const redirectTo = window.location.origin + window.location.pathname;
+      supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo },
+      });
     });
   }
 
