@@ -673,6 +673,7 @@ function renderCartPage() {
       <div class="cart-item-thumb">
         <img src="${productImage(item, 120)}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="imgFallback(this, '${unsplashImage('fallback-' + item.name, 120)}')" />
       </div>
+      <button type="button" class="cart-remove-btn" data-index="${index}">Remove</button>
     `;
     cartItems.appendChild(itemEl);
 
@@ -691,6 +692,18 @@ function renderCartPage() {
       if (Number.isNaN(index) || !cart[index]) return;
       cart[index].selected = event.target.checked;
       saveState();
+      renderCartPage();
+    });
+  });
+
+  const removeButtons = cartItems.querySelectorAll('.cart-remove-btn');
+  removeButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const index = Number(btn.dataset.index);
+      if (Number.isNaN(index) || !cart[index]) return;
+      cart.splice(index, 1);
+      saveState();
+      updateCartCount();
       renderCartPage();
     });
   });

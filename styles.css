@@ -465,6 +465,7 @@ body.signed-in .hero-masonry {
 
 .cart-item {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   padding: 1rem 0;
@@ -517,6 +518,27 @@ body.signed-in .hero-masonry {
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.cart-remove-btn {
+  flex-basis: 100%;
+  align-self: flex-end;
+  width: auto;
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--red-600);
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.cart-remove-btn:hover {
+  background: #fef2f2;
+  border-color: var(--red-600);
 }
 
 .cart-total {
