@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=21" />
+    <link rel="stylesheet" href="styles.css?v=22" />
   </head>
   <body class="orders-page">
     <header class="topbar" id="topbar">
@@ -51,6 +51,7 @@
             <button class="tab-button" data-tab="ordersTab">Orders</button>
             <button class="tab-button" data-tab="toShipTab">To Ship</button>
             <button class="tab-button" data-tab="toReceiveTab">To Receive</button>
+            <button class="tab-button" data-tab="finishedTab">Finished</button>
           </div>
 
           <div class="tab-panels">
@@ -82,6 +83,12 @@
             <div class="tab-panel" id="toReceiveTab">
               <div class="orders-list" id="toReceiveList">
                 <p class="empty-state">You have no items currently out for delivery.</p>
+              </div>
+            </div>
+
+            <div class="tab-panel" id="finishedTab">
+              <div class="orders-list" id="finishedList">
+                <p class="empty-state">No finished orders yet.</p>
               </div>
             </div>
           </div>
@@ -186,6 +193,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabaseConfig.js"></script>
-    <script src="script.js?v=21"></script>
+    <script src="script.js?v=22"></script>
   </body>
 </html>

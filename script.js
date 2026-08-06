@@ -77,7 +77,9 @@ let productsMap = {};
 
 const ORDER_STATUS_LABELS = {
   pending: 'Pending',
+  preparing: 'Preparing',
   to_ship: 'To Ship',
+  to_receive: 'To Receive',
   shipped: 'To Receive',
   delivered: 'Delivered',
   cancelled: 'Cancelled',
@@ -587,6 +589,7 @@ function renderOrders(orders) {
   const ordersList = document.getElementById('ordersList');
   const toShipList = document.getElementById('toShipList');
   const toReceiveList = document.getElementById('toReceiveList');
+  const finishedList = document.getElementById('finishedList');
 
   const renderInto = (container, list) => {
     if (!container) return;
@@ -623,8 +626,9 @@ function renderOrders(orders) {
   };
 
   renderInto(ordersList, orders);
-  renderInto(toShipList, orders.filter((order) => order.status === 'to_ship'));
-  renderInto(toReceiveList, orders.filter((order) => order.status === 'shipped'));
+  renderInto(toShipList, orders.filter((order) => order.status === 'preparing' || order.status === 'to_ship'));
+  renderInto(toReceiveList, orders.filter((order) => order.status === 'to_receive' || order.status === 'shipped'));
+  renderInto(finishedList, orders.filter((order) => order.status === 'delivered'));
 }
 
 async function loadOrders() {
