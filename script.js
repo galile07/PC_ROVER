@@ -607,7 +607,14 @@ function renderOrders(orders) {
       const createdDate = new Date(order.created_at);
       const dateText = Number.isNaN(createdDate.getTime())
         ? ''
-        : createdDate.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
+        : createdDate.toLocaleString('en-PH', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            timeZone: 'Asia/Manila',
+          });
       const itemsHtml = (Array.isArray(order.items) ? order.items : [])
         .map((item) => `${escapeHtml(item.name)} — ${formatCurrency(item.value || 0)}`)
         .join('<br>');
