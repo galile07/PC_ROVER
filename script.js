@@ -78,12 +78,12 @@ let productsMap = {};
 const ORDER_STATUS_LABELS = {
   pending: 'Pending',
   preparing: 'Preparing',
+  shipped: 'Preparing',
   completed: 'Preparing',
   to_ship: 'To Ship',
   shipping: 'Shipping',
-  shipped: 'Shipping',
+  delivered: 'Shipping',
   to_receive: 'Shipping',
-  delivered: 'Finished',
   finished: 'Finished',
   cancelled: 'Cancelled',
 };
@@ -636,9 +636,9 @@ function renderOrders(orders) {
   };
 
   renderInto(ordersList, orders.filter((order) => order.status === 'pending'));
-  renderInto(toShipList, orders.filter((order) => order.status === 'preparing' || order.status === 'completed' || order.status === 'to_ship'));
-  renderInto(toReceiveList, orders.filter((order) => order.status === 'shipping' || order.status === 'shipped' || order.status === 'to_receive'));
-  renderInto(finishedList, orders.filter((order) => order.status === 'finished' || order.status === 'delivered'));
+  renderInto(toShipList, orders.filter((order) => order.status === 'shipped' || order.status === 'preparing' || order.status === 'completed' || order.status === 'to_ship'));
+  renderInto(toReceiveList, orders.filter((order) => order.status === 'delivered' || order.status === 'shipping' || order.status === 'to_receive'));
+  renderInto(finishedList, orders.filter((order) => order.status === 'finished'));
 }
 
 async function loadOrders() {
