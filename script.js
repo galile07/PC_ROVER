@@ -701,10 +701,18 @@ function renderCartPage() {
     btn.addEventListener('click', () => {
       const index = Number(btn.dataset.index);
       if (Number.isNaN(index) || !cart[index]) return;
-      cart.splice(index, 1);
-      saveState();
-      updateCartCount();
-      renderCartPage();
+      const item = cart[index];
+      showConfirmDialog({
+        title: 'Remove item',
+        message: `Remove "${item.name}" from your cart?`,
+        confirmText: 'Remove',
+        onConfirm: () => {
+          cart.splice(index, 1);
+          saveState();
+          updateCartCount();
+          renderCartPage();
+        },
+      });
     });
   });
 
@@ -777,6 +785,50 @@ function closePanel(panel) {
   if (overlay) {
     overlay.classList.add('hidden');
   }
+}
+
+let confirmDialog = null;
+
+function showConfirmDialog({ title, message, confirmText = 'Remove', cancelText = 'Cancel', onConfirm } = {}) {
+  if (!confirmDialog) {
+    confirmDialog = document.createElement('div');
+    confirmDialog.className = 'modal hidden';
+    confirmDialog.innerHTML = `
+      <div class="modal-card confirm-card">
+        <div class="confirm-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"></path>
+            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+          </svg>
+        </div>
+        <h3 class="confirm-title"></h3>
+        <p class="confirm-message"></p>
+        <div class="confirm-actions">
+          <button type="button" class="btn confirm-cancel"></button>
+          <button type="button" class="btn confirm-ok"></button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(confirmDialog);
+    confirmDialog.querySelector('.modal-card').addEventListener('click', (e) => e.stopPropagation());
+    confirmDialog.querySelector('.confirm-cancel').addEventListener('click', () => closeConfirmDialog());
+    confirmDialog.querySelector('.confirm-ok').addEventListener('click', () => {
+      const fn = confirmDialog._onConfirm;
+      closeConfirmDialog();
+      if (fn) fn();
+    });
+  }
+  confirmDialog._onConfirm = onConfirm;
+  confirmDialog.querySelector('.confirm-title').textContent = title || 'Confirm';
+  confirmDialog.querySelector('.confirm-message').textContent = message || '';
+  confirmDialog.querySelector('.confirm-cancel').textContent = cancelText;
+  confirmDialog.querySelector('.confirm-ok').textContent = confirmText;
+  openPanel(confirmDialog);
+}
+
+function closeConfirmDialog() {
+  if (confirmDialog) closePanel(confirmDialog);
 }
 
 function requireSignIn() {

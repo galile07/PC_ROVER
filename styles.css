@@ -603,6 +603,70 @@ body.signed-in .hero-masonry {
   color: var(--gray-900);
 }
 
+/* ---------- Confirm dialog ---------- */
+
+.confirm-card {
+  text-align: center;
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+}
+
+.confirm-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fef2f2;
+  color: var(--red-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.confirm-title {
+  font-size: 1.15rem;
+  color: var(--gray-900);
+  margin: 0;
+}
+
+.confirm-message {
+  color: var(--gray-700);
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.confirm-actions .btn {
+  flex: 1;
+}
+
+.confirm-cancel {
+  background: var(--gray-100);
+  color: var(--gray-900);
+}
+
+.confirm-ok {
+  background: var(--red-600);
+  color: var(--white);
+  box-shadow: 0 12px 24px rgba(220, 38, 38, 0.24);
+}
+
+.confirm-ok:hover {
+  filter: brightness(1.06);
+}
+
 .form-card {
   display: grid;
   gap: 1rem;
