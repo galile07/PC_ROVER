@@ -124,6 +124,16 @@ create table if not exists public.orders (
 
 create index if not exists orders_user_id_idx on public.orders (user_id);
 
+-- Only valid order statuses may be stored. The admin writes these values:
+--   pending    -> customer "Orders" section    (shown as "Pending")
+--   completed  -> customer "To Ship" section    (shown as "Preparing")
+--   shipped    -> customer "To Receive" section (shown as "Shipping")
+--   delivered  -> customer "Finished" section   (shown as "Finished")
+alter table public.orders drop constraint if exists orders_status_check;
+alter table public.orders
+  add constraint orders_status_check
+  check (status in ('pending', 'completed', 'shipped', 'delivered', 'cancelled'));
+
 alter table public.orders enable row level security;
 
 create policy "Users can read their own orders"
