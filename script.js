@@ -831,6 +831,41 @@ function closeConfirmDialog() {
   if (confirmDialog) closePanel(confirmDialog);
 }
 
+let successDialog = null;
+
+function showSuccessDialog({ title, message, buttonText = 'View Orders', onAction } = {}) {
+  if (!successDialog) {
+    successDialog = document.createElement('div');
+    successDialog.className = 'modal hidden';
+    successDialog.innerHTML = `
+      <div class="modal-card confirm-card success-card">
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <h3 class="confirm-title"></h3>
+        <p class="confirm-message"></p>
+        <div class="confirm-actions">
+          <button type="button" class="btn success-ok"></button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(successDialog);
+    successDialog.querySelector('.modal-card').addEventListener('click', (e) => e.stopPropagation());
+    successDialog.querySelector('.success-ok').addEventListener('click', () => {
+      const fn = successDialog._onAction;
+      closePanel(successDialog);
+      if (fn) fn();
+    });
+  }
+  successDialog._onAction = onAction;
+  successDialog.querySelector('.confirm-title').textContent = title || 'Success';
+  successDialog.querySelector('.confirm-message').textContent = message || '';
+  successDialog.querySelector('.success-ok').textContent = buttonText;
+  openPanel(successDialog);
+}
+
 function requireSignIn() {
   if (!isSignedIn) {
     clearFormError();
@@ -879,6 +914,15 @@ function setupTabs(tabContainer) {
       panels.forEach((panel) => panel.classList.toggle('active', panel.id === button.dataset.tab));
     });
   });
+}
+
+function activateTab(tabContainer, tabId) {
+  if (!tabContainer) return;
+  const buttons = tabContainer.querySelectorAll('.tab-button');
+  const section = tabContainer.closest('section');
+  const panels = section ? section.querySelectorAll('.tab-panel') : [];
+  buttons.forEach((btn) => btn.classList.toggle('active', btn.dataset.tab === tabId));
+  panels.forEach((panel) => panel.classList.toggle('active', panel.id === tabId));
 }
 
 function setActiveNavLink() {
@@ -1301,7 +1345,18 @@ function init() {
       updateCartCount();
       renderCartPage();
       closePanel(paymentModal);
-      showToast('Checkout successful');
+      showSuccessDialog({
+        title: 'Order placed!',
+        message: 'Your order was successfully placed.',
+        buttonText: 'View Orders',
+        onAction: () => {
+          if (cartTabs) {
+            activateTab(cartTabs, 'ordersTab');
+          } else {
+            window.location.href = 'cart.html';
+          }
+        },
+      });
       loadOrders();
     });
   }

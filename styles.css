@@ -667,6 +667,32 @@ body.signed-in .hero-masonry {
   filter: brightness(1.06);
 }
 
+.success-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #ecfdf5;
+  color: #059669;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.success-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.success-ok {
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+  color: var(--white);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.24);
+}
+
+.success-ok:hover {
+  filter: brightness(1.06);
+}
+
 .form-card {
   display: grid;
   gap: 1rem;
