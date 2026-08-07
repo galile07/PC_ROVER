@@ -764,6 +764,32 @@ body.signed-in .hero-masonry {
   box-shadow: var(--shadow-sm);
 }
 
+.btn-google--blue {
+  border-color: var(--blue);
+  background: linear-gradient(120deg, var(--blue), var(--blue-deep));
+  color: var(--white);
+}
+
+.btn-google--blue:hover {
+  border-color: var(--blue-dark);
+  background: linear-gradient(120deg, var(--blue-dark), var(--blue-deep));
+  color: var(--white);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-google--orange {
+  border-color: var(--orange);
+  background: linear-gradient(120deg, var(--orange), var(--orange-dark));
+  color: var(--white);
+}
+
+.btn-google--orange:hover {
+  border-color: var(--orange-dark);
+  background: linear-gradient(120deg, var(--orange-dark), #c2410c);
+  color: var(--white);
+  box-shadow: var(--shadow-sm);
+}
+
 .google-icon {
   flex-shrink: 0;
 }

@@ -1374,7 +1374,7 @@ function init() {
     paymentForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       if (!credentials.length) {
-        alert('No delivery credentials available. Please add one in your account.');
+        showToast('No delivery credentials available. Please add one in your account.');
         return;
       }
 
@@ -1382,7 +1382,7 @@ function init() {
       const selectedId = credentialSelect?.value;
       const selectedCredential = credentials.find((c) => c.id === selectedId) || credentials[0];
       if (!selectedCredential) {
-        alert('Please choose a delivery credential.');
+        showToast('Please choose a delivery credential.');
         return;
       }
 
@@ -1477,7 +1477,7 @@ function init() {
       }
 
       if (!credentials.length) {
-        alert('Please add at least one delivery credential in your account before checkout.');
+        showToast('Please add at least one delivery credential in your account before checkout.');
         return;
       }
 
