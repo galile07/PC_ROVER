@@ -73,6 +73,7 @@ let currentUser = null;
 let currentSelectedProduct = null;
 let currentAddButtonEl = null;
 let productsMap = {};
+let allProducts = [];
 
 const ORDER_STATUS_LABELS = {
   pending: 'Pending',
@@ -450,6 +451,7 @@ async function loadProducts() {
       list.push(product);
     });
   }
+  allProducts = list;
   renderProducts(list);
 }
 
@@ -512,7 +514,9 @@ function renderProducts(products) {
     const category = grid.dataset.products;
     const list = category === 'all' ? products : products.filter((product) => product.category === category);
     if (!list.length) {
-      grid.innerHTML = '<p class="empty-state">No products in this category yet.</p>';
+      const searchInput = document.getElementById('productSearch');
+      const searching = searchInput && searchInput.value.trim();
+      grid.innerHTML = `<p class="empty-state">${searching ? 'No products found for "' + escapeHtml(searchInput.value.trim()) + '".' : 'No products in this category yet.'}</p>`;
       return;
     }
     if (grid.dataset.masonry === 'true') {
@@ -1143,6 +1147,17 @@ function init() {
       closePanel(signInModal);
       closePanel(paymentModal);
       if (productModal) closePanel(productModal);
+    });
+  }
+
+  const productSearchInput = document.getElementById('productSearch');
+  if (productSearchInput) {
+    productSearchInput.addEventListener('input', () => {
+      const query = productSearchInput.value.trim().toLowerCase();
+      const filtered = query
+        ? allProducts.filter((product) => (product.name || '').toLowerCase().includes(query))
+        : allProducts;
+      renderProducts(filtered);
     });
   }
 
