@@ -665,30 +665,20 @@ function renderOrders(orders) {
       container.appendChild(card);
       if (cancellable) {
         card.querySelector('.order-cancel-btn').addEventListener('click', () => {
-          showConfirmDialog({
-            title: 'Cancel order',
-            message: 'Cancel this order? The admin has not accepted it yet.',
-            confirmText: 'Cancel Order',
-            onConfirm: async () => {
-              const { error } = await supabaseClient
-                .from('orders')
-                .update({ status: 'cancelled' })
-                .eq('id', order.id)
-                .eq('user_id', currentUser.id);
-              if (error) {
-                showToast('Failed to cancel order. Try again.');
-                return;
-              }
-              showToast('Order cancelled.');
-              loadOrders();
-            },
-          });
+          showCancelOrderDialog(order);
         });
       }
     });
   };
 
-  renderInto(ordersList, orders.filter((order) => order.status === 'pending' || order.status === 'cancelled'));
+  const CANCELLED_VISIBLE_MS = 15 * 24 * 60 * 60 * 1000;
+  const visibleCancelled = (order) => {
+    if (order.status !== 'cancelled') return true;
+    const created = new Date(order.created_at).getTime();
+    return Number.isFinite(created) && Date.now() - created < CANCELLED_VISIBLE_MS;
+  };
+
+  renderInto(ordersList, orders.filter((order) => (order.status === 'pending' || order.status === 'cancelled') && visibleCancelled(order)));
   renderInto(toShipList, orders.filter((order) => order.status === 'shipped' || order.status === 'preparing' || order.status === 'to_ship'));
   renderInto(toReceiveList, orders.filter((order) => order.status === 'delivered' || order.status === 'shipping' || order.status === 'to_receive'));
   renderInto(finishedList, orders.filter((order) => order.status === 'completed' || order.status === 'finished'));
@@ -896,6 +886,62 @@ function showConfirmDialog({ title, message, confirmText = 'Remove', cancelText 
 
 function closeConfirmDialog() {
   if (confirmDialog) closePanel(confirmDialog);
+}
+
+let cancelReasonDialog = null;
+
+function showCancelOrderDialog(order) {
+  if (!cancelReasonDialog) {
+    cancelReasonDialog = document.createElement('div');
+    cancelReasonDialog.className = 'modal hidden';
+    cancelReasonDialog.innerHTML = `
+      <div class="modal-card confirm-card">
+        <div class="confirm-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"></path>
+            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+          </svg>
+        </div>
+        <h3 class="confirm-title">Cancel order</h3>
+        <p class="confirm-message">Why are you cancelling this order?</p>
+        <select class="cancel-reason-select" aria-label="Cancellation reason">
+          <option value="">Select a reason…</option>
+          <option value="Not enough payment">Not enough payment</option>
+          <option value="Change of mind">Change of mind</option>
+          <option value="Rather not say">Rather not say</option>
+        </select>
+        <div class="confirm-actions">
+          <button type="button" class="btn confirm-cancel">Keep Order</button>
+          <button type="button" class="btn confirm-ok" disabled>Cancel Order</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(cancelReasonDialog);
+    cancelReasonDialog.querySelector('.modal-card').addEventListener('click', (e) => e.stopPropagation());
+    cancelReasonDialog.querySelector('.confirm-cancel').addEventListener('click', () => closePanel(cancelReasonDialog));
+    cancelReasonDialog.querySelector('.cancel-reason-select').addEventListener('change', (event) => {
+      cancelReasonDialog.querySelector('.confirm-ok').disabled = !event.target.value;
+    });
+    cancelReasonDialog.querySelector('.confirm-ok').addEventListener('click', async () => {
+      const reason = cancelReasonDialog.querySelector('.cancel-reason-select').value;
+      closePanel(cancelReasonDialog);
+      const { error } = await supabaseClient
+        .from('orders')
+        .update({ status: 'cancelled', cancel_reason: reason })
+        .eq('id', order.id)
+        .eq('user_id', currentUser.id);
+      if (error) {
+        showToast('Failed to cancel order. Try again.');
+        return;
+      }
+      showToast('Order cancelled.');
+      loadOrders();
+    });
+  }
+  cancelReasonDialog.querySelector('.cancel-reason-select').value = '';
+  cancelReasonDialog.querySelector('.confirm-ok').disabled = true;
+  openPanel(cancelReasonDialog);
 }
 
 let successDialog = null;

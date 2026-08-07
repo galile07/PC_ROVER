@@ -119,6 +119,7 @@ create table if not exists public.orders (
   phone text,
   address text,
   status text not null default 'pending',
+  cancel_reason text,
   created_at timestamptz not null default now()
 );
 
