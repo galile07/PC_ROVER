@@ -47,7 +47,6 @@ const signInPassword = document.getElementById('signInPassword');
 const togglePasswordBtn = document.getElementById('togglePasswordBtn');
 const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
 const signInError = document.getElementById('signInError');
-const shopNowBtn = document.getElementById('shopNowBtn');
 const signUpName = document.getElementById('signUpName');
 const signUpEmail = document.getElementById('signUpEmail');
 const signUpCode = document.getElementById('signUpCode');
@@ -74,7 +73,6 @@ let currentUser = null;
 let currentSelectedProduct = null;
 let currentAddButtonEl = null;
 let productsMap = {};
-let allProducts = [];
 
 const ORDER_STATUS_LABELS = {
   pending: 'Pending',
@@ -369,6 +367,15 @@ function setSignInMode(signUp) {
   }
 }
 
+function signInWithGoogle() {
+  clearFormError();
+  const redirectTo = window.location.origin + window.location.pathname;
+  supabaseClient.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo },
+  });
+}
+
 // ---------- Products ----------
 
 let _rulesCache = null;
@@ -443,7 +450,6 @@ async function loadProducts() {
       list.push(product);
     });
   }
-  allProducts = list;
   renderProducts(list);
 }
 
@@ -506,9 +512,7 @@ function renderProducts(products) {
     const category = grid.dataset.products;
     const list = category === 'all' ? products : products.filter((product) => product.category === category);
     if (!list.length) {
-      const searchInput = document.getElementById('productSearch');
-      const searching = searchInput && searchInput.value.trim();
-      grid.innerHTML = `<p class="empty-state">${searching ? 'No products found for "' + escapeHtml(searchInput.value.trim()) + '".' : 'No products in this category yet.'}</p>`;
+      grid.innerHTML = '<p class="empty-state">No products in this category yet.</p>';
       return;
     }
     if (grid.dataset.masonry === 'true') {
@@ -1142,15 +1146,14 @@ function init() {
     });
   }
 
-  const productSearchInput = document.getElementById('productSearch');
-  if (productSearchInput) {
-    productSearchInput.addEventListener('input', () => {
-      const query = productSearchInput.value.trim().toLowerCase();
-      const filtered = query
-        ? allProducts.filter((product) => (product.name || '').toLowerCase().includes(query))
-        : allProducts;
-      renderProducts(filtered);
-    });
+  const googleSignInBtn = document.getElementById('googleSignInBtn');
+  if (googleSignInBtn) {
+    googleSignInBtn.addEventListener('click', signInWithGoogle);
+  }
+
+  const googleHeroBtn = document.getElementById('googleHeroBtn');
+  if (googleHeroBtn) {
+    googleHeroBtn.addEventListener('click', signInWithGoogle);
   }
 
   if (closeSignInBtn) {
@@ -1168,18 +1171,6 @@ function init() {
   if (toggleSignUpBtn) {
     toggleSignUpBtn.addEventListener('click', () => {
       setSignInMode(!isSignUpMode);
-    });
-  }
-
-  const googleSignInBtn = document.getElementById('googleSignInBtn');
-  if (googleSignInBtn) {
-    googleSignInBtn.addEventListener('click', () => {
-      clearFormError();
-      const redirectTo = window.location.origin + window.location.pathname;
-      supabaseClient.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo },
-      });
     });
   }
 
@@ -1344,14 +1335,6 @@ function init() {
         return;
       }
       showFormError('Password reset link sent. Check your inbox.', true);
-    });
-  }
-
-  if (shopNowBtn) {
-    shopNowBtn.addEventListener('click', () => {
-      clearFormError();
-      setSignInMode(false);
-      openPanel(signInModal);
     });
   }
 
