@@ -264,6 +264,7 @@ body.signed-in .search-bar {
 
 .hero-actions {
   display: flex;
+  flex-direction: column;
   gap: 0.8rem;
   margin: 1.4rem 0 1.6rem;
 }

@@ -1171,6 +1171,11 @@ function init() {
     googleHeroBtn.addEventListener('click', signInWithGoogle);
   }
 
+  const googleSignUpHeroBtn = document.getElementById('googleSignUpHeroBtn');
+  if (googleSignUpHeroBtn) {
+    googleSignUpHeroBtn.addEventListener('click', signInWithGoogle);
+  }
+
   if (closeSignInBtn) {
     closeSignInBtn.addEventListener('click', () => closePanel(signInModal));
   }
