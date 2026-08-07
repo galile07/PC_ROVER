@@ -1410,7 +1410,7 @@ function init() {
       if (accountPhoneInput) currentUser.phone = accountPhoneInput.value.trim();
       saveState();
       if (accountStatus) accountStatus.textContent = `Hi, ${currentUser.name.split(' ')[0]}`;
-      alert('Account settings saved.');
+      showToast('Account settings saved.');
     });
   }
 
