@@ -377,6 +377,18 @@ function signInWithGoogle() {
   });
 }
 
+function signUpWithGoogle() {
+  clearFormError();
+  const redirectTo = window.location.origin + window.location.pathname;
+  supabaseClient.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo,
+      queryParams: { prompt: 'select_account' },
+    },
+  });
+}
+
 // ---------- Products ----------
 
 let _rulesCache = null;
@@ -1173,7 +1185,7 @@ function init() {
 
   const googleSignUpHeroBtn = document.getElementById('googleSignUpHeroBtn');
   if (googleSignUpHeroBtn) {
-    googleSignUpHeroBtn.addEventListener('click', signInWithGoogle);
+    googleSignUpHeroBtn.addEventListener('click', signUpWithGoogle);
   }
 
   if (closeSignInBtn) {
