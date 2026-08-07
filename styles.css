@@ -163,6 +163,21 @@ img {
   filter: brightness(1.18);
 }
 
+.btn-danger {
+  background: #ef4444;
+  color: var(--white);
+  box-shadow: 0 12px 24px rgba(239, 68, 68, 0.24);
+}
+
+.btn-danger:hover {
+  filter: brightness(1.06);
+}
+
+.btn-sm {
+  padding: 0.5rem 0.9rem;
+  font-size: 0.82rem;
+}
+
 .btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;

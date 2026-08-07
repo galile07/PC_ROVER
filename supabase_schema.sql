@@ -148,6 +148,11 @@ create policy "Users can place their own orders"
   on public.orders for insert
   with check (auth.uid() = user_id);
 
+create policy "Users can cancel their own pending orders"
+  on public.orders for update
+  using (auth.uid() = user_id and status = 'pending')
+  with check (auth.uid() = user_id and status = 'cancelled');
+
 -- ---------- 5. INVENTORY: readable by logged-in users ----------
 -- The admin panel created RLS on inventory for the anon role only,
 -- so authenticated (logged-in) users got an empty catalog.

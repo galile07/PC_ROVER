@@ -648,6 +648,7 @@ function renderOrders(orders) {
         .map((item) => `${escapeHtml(item.name)} — ${formatCurrency(item.value || 0)}`)
         .join('<br>');
       const methodText = order.payment_method === 'gcash' ? 'GCash' : 'Cash on Delivery';
+      const cancellable = order.status === 'pending';
       card.innerHTML = `
         <div class="order-header">
           <strong>Order #${escapeHtml(String(order.id).slice(0, 8).toUpperCase())}</strong>
@@ -659,12 +660,35 @@ function renderOrders(orders) {
           <span>Total ${formatCurrency(order.total)}</span>
         </div>
         <div class="order-items">${itemsHtml}</div>
+        ${cancellable ? '<button type="button" class="btn btn-danger btn-sm order-cancel-btn">Cancel Order</button>' : ''}
       `;
       container.appendChild(card);
+      if (cancellable) {
+        card.querySelector('.order-cancel-btn').addEventListener('click', () => {
+          showConfirmDialog({
+            title: 'Cancel order',
+            message: 'Cancel this order? The admin has not accepted it yet.',
+            confirmText: 'Cancel Order',
+            onConfirm: async () => {
+              const { error } = await supabaseClient
+                .from('orders')
+                .update({ status: 'cancelled' })
+                .eq('id', order.id)
+                .eq('user_id', currentUser.id);
+              if (error) {
+                showToast('Failed to cancel order. Try again.');
+                return;
+              }
+              showToast('Order cancelled.');
+              loadOrders();
+            },
+          });
+        });
+      }
     });
   };
 
-  renderInto(ordersList, orders.filter((order) => order.status === 'pending'));
+  renderInto(ordersList, orders.filter((order) => order.status === 'pending' || order.status === 'cancelled'));
   renderInto(toShipList, orders.filter((order) => order.status === 'shipped' || order.status === 'preparing' || order.status === 'to_ship'));
   renderInto(toReceiveList, orders.filter((order) => order.status === 'delivered' || order.status === 'shipping' || order.status === 'to_receive'));
   renderInto(finishedList, orders.filter((order) => order.status === 'completed' || order.status === 'finished'));
