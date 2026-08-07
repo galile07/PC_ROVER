@@ -1543,7 +1543,6 @@ function init() {
         console.error('signOut error', err);
       }
       clearUser();
-      alert('You have been signed out.');
       window.location.href = 'index.html';
     });
   }
