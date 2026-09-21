@@ -400,18 +400,13 @@ body.signed-in .search-bar {
   border-radius: 1.5rem;
 }
 
-/* Signed-in: keep hero copy visible, products shown in carousel below */
+/* Signed-in: landing hero is for guests only, shop grid takes over */
 body.signed-in .hero {
-  padding-top: 0.75rem;
+  display: none;
 }
 
-body.signed-in .hero-grid {
-  grid-template-columns: 1fr;
-}
-
-body.signed-in .hero-masonry {
-  max-height: none;
-  overflow-y: visible;
+body:not(.signed-in) .shop-section {
+  display: none;
 }
 
 /* ---------- Hero product carousel ---------- */
@@ -460,37 +455,9 @@ body.signed-in .hero-masonry {
   cursor: pointer;
 }
 
-.carousel-nav {
-  display: flex;
-  justify-content: center;
-  gap: 0.7rem;
-  margin-top: 1.2rem;
-}
-
+.carousel-nav,
 .carousel-arrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.7rem;
-  height: 2.7rem;
-  border-radius: 999px;
-  border: 1px solid var(--gray-200);
-  background: var(--white);
-  color: var(--gray-700);
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.carousel-arrow:hover {
-  border-color: var(--blue);
-  color: var(--blue);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
-}
-
-.carousel-arrow:active {
-  transform: translateY(0);
+  display: none;
 }
 
 .masonry {
@@ -1470,15 +1437,6 @@ body.signed-in .hero-masonry {
   .hero-grid {
     grid-template-columns: 1fr;
     text-align: center;
-  }
-
-  .hero-actions {
-    justify-content: center;
-  }
-
-  .hero-masonry {
-    max-height: none;
-    overflow: visible;
   }
 
   .product-grid {

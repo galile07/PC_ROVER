@@ -639,21 +639,6 @@ function setupCarousel(carousel, products) {
   carousel._carouselTimer = setInterval(() => {
     if (!paused && !document.hidden) goNext();
   }, CAROUSEL_AUTOPLAY_MS);
-
-  const prevBtn = document.querySelector('[data-carousel-action="prev"]');
-  const nextBtn = document.querySelector('[data-carousel-action="next"]');
-  if (prevBtn) {
-    prevBtn.onclick = () => {
-      paused = true;
-      goPrev();
-    };
-  }
-  if (nextBtn) {
-    nextBtn.onclick = () => {
-      paused = true;
-      goNext();
-    };
-  }
 }
 
 let _carouselResizeTimer = null;

@@ -27,7 +27,7 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="styles.css?v=48" />
+    <link rel="stylesheet" href="styles.css?v=49" />
   </head>
   <body>
     <header class="topbar" id="topbar">
@@ -57,9 +57,6 @@
 
     <main>
       <section class="hero">
-        <div class="container search-bar">
-          <input type="search" id="productSearch" placeholder="Search products…" autocomplete="off" aria-label="Search products" />
-        </div>
         <div class="container hero-grid">
           <div class="hero-copy">
             <h1>Your destination for affordable computers, accesories and preowned tech.</h1>
@@ -74,18 +71,22 @@
                 <p class="empty-state">Loading products…</p>
               </div>
             </div>
-            <div class="carousel-nav">
-              <button type="button" class="carousel-arrow" data-carousel-action="prev" aria-label="Previous products">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M15 18l-6-6 6-6"></path>
-                </svg>
-              </button>
-              <button type="button" class="carousel-arrow" data-carousel-action="next" aria-label="Next products">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M9 18l6-6-6-6"></path>
-                </svg>
-              </button>
-            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section shop-section" id="shopSection">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">Shop</p>
+            <h2>Browse products</h2>
+            <p>Discover the latest gadgets, gear, and pre-owned tech available now.</p>
+          </div>
+          <div class="search-bar">
+            <input type="search" id="productSearch" placeholder="Search products…" autocomplete="off" aria-label="Search products" />
+          </div>
+          <div class="masonry" data-products="all" data-masonry="true">
+            <p class="empty-state">Loading products…</p>
           </div>
         </div>
       </section>
@@ -194,6 +195,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabaseConfig.js"></script>
-    <script src="script.js?v=48"></script>
+    <script src="script.js?v=49"></script>
   </body>
 </html>
