@@ -246,9 +246,13 @@ body.signed-in .search-bar {
 
 .hero-grid {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: 1fr;
   gap: 2rem;
   align-items: start;
+}
+
+.hero-copy {
+  max-width: 720px;
 }
 
 .eyebrow {
@@ -306,6 +310,78 @@ body.signed-in .hero-grid {
 body.signed-in .hero-masonry {
   max-height: none;
   overflow-y: visible;
+}
+
+/* ---------- Hero product carousel ---------- */
+
+.hero-carousel {
+  position: relative;
+  margin-top: 0.5rem;
+}
+
+.carousel-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin: 0 0 1rem;
+  color: var(--gray-900);
+}
+
+.carousel-viewport {
+  overflow: hidden;
+  margin: 0 -0.6rem;
+}
+
+.carousel-track {
+  display: flex;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.carousel-cell {
+  flex-shrink: 0;
+  min-width: 0;
+  padding: 0 0.6rem;
+}
+
+.carousel-cell .product-card {
+  height: 100%;
+}
+
+.carousel-cell .product-card img {
+  height: 230px;
+}
+
+.carousel-nav {
+  display: flex;
+  justify-content: center;
+  gap: 0.7rem;
+  margin-top: 1.2rem;
+}
+
+.carousel-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.7rem;
+  height: 2.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  color: var(--gray-700);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.carousel-arrow:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.carousel-arrow:active {
+  transform: translateY(0);
 }
 
 .masonry {
@@ -1236,12 +1312,12 @@ body.signed-in .hero-masonry {
 /* ---------- Responsive ---------- */
 
 @media (max-width: 900px) {
-  .hero-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
   .product-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .carousel-cell .product-card img {
+    height: 200px;
   }
 }
 

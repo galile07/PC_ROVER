@@ -525,6 +525,10 @@ function renderProducts(products) {
   grids.forEach((grid) => {
     const category = grid.dataset.products;
     const list = category === 'all' ? products : products.filter((product) => product.category === category);
+    if (grid.dataset.carousel === 'true') {
+      setupCarousel(grid, list);
+      return;
+    }
     if (!list.length) {
       const searchInput = document.getElementById('productSearch');
       const searching = searchInput && searchInput.value.trim();
@@ -537,6 +541,112 @@ function renderProducts(products) {
     }
     grid.innerHTML = list.map((product) => productCard(product)).join('');
   });
+}
+
+// ---------- Hero carousel ----------
+
+const CAROUSEL_AUTOPLAY_MS = 3000;
+
+function carouselVisibleCount() {
+  const width = window.innerWidth;
+  if (width >= 900) return 3;
+  if (width >= 560) return 2;
+  return 1;
+}
+
+function setupCarousel(carousel, products) {
+  if (carousel._carouselTimer) {
+    clearInterval(carousel._carouselTimer);
+    carousel._carouselTimer = null;
+  }
+  carousel._products = products || [];
+
+  if (!carousel._products.length) {
+    carousel.innerHTML = '<p class="empty-state">No products yet.</p>';
+    return;
+  }
+
+  const visible = carouselVisibleCount();
+  const cellsHtml = carousel._products
+    .map((product) => `<div class="carousel-cell" style="flex: 0 0 ${100 / visible}%">${productCard(product)}</div>`)
+    .join('');
+  carousel.innerHTML = cellsHtml;
+
+  const originals = Array.from(carousel.children).slice(0, visible);
+  originals.forEach((cell) => carousel.appendChild(cell.cloneNode(true)));
+
+  let index = 0;
+  let paused = false;
+
+  const step = () => (carousel.children[0] ? carousel.children[0].offsetWidth : 0);
+
+  const setPosition = (target, animate) => {
+    if (!animate) carousel.style.transition = 'none';
+    carousel.style.transform = `translateX(-${target * step()}px)`;
+    if (!animate) {
+      void carousel.offsetWidth;
+      carousel.style.transition = '';
+    }
+  };
+
+  const goNext = () => {
+    index += 1;
+    if (index > carousel._products.length) {
+      index = 0;
+      setPosition(index, false);
+      return;
+    }
+    setPosition(index, true);
+  };
+
+  const goPrev = () => {
+    index -= 1;
+    if (index < 0) {
+      index = carousel._products.length;
+      setPosition(index, false);
+    }
+    setPosition(index, true);
+  };
+
+  carousel._carouselGoNext = goNext;
+  carousel._carouselGoPrev = goPrev;
+
+  carousel.addEventListener('mouseenter', () => {
+    paused = true;
+  });
+  carousel.addEventListener('mouseleave', () => {
+    paused = false;
+  });
+
+  carousel._carouselTimer = setInterval(() => {
+    if (!paused && !document.hidden) goNext();
+  }, CAROUSEL_AUTOPLAY_MS);
+
+  const prevBtn = document.querySelector('[data-carousel-action="prev"]');
+  const nextBtn = document.querySelector('[data-carousel-action="next"]');
+  if (prevBtn) {
+    prevBtn.onclick = () => {
+      paused = true;
+      goPrev();
+    };
+  }
+  if (nextBtn) {
+    nextBtn.onclick = () => {
+      paused = true;
+      goNext();
+    };
+  }
+}
+
+let _carouselResizeTimer = null;
+
+function handleCarouselResize() {
+  clearTimeout(_carouselResizeTimer);
+  _carouselResizeTimer = setTimeout(() => {
+    document.querySelectorAll('[data-carousel="true"]').forEach((carousel) => {
+      setupCarousel(carousel, carousel._products || []);
+    });
+  }, 200);
 }
 
 // ---------- Credentials ----------
@@ -1242,6 +1352,8 @@ function init() {
       renderProducts(filtered);
     });
   }
+
+  window.addEventListener('resize', handleCarouselResize);
 
   const googleSignInBtn = document.getElementById('googleSignInBtn');
   if (googleSignInBtn) {
