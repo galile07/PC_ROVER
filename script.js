@@ -498,7 +498,6 @@ function productCard(product) {
       <img src="${productImage(product, 600)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="imgFallback(this, '${unsplashImage('fallback-' + product.name, 600)}')" />
       <div class="product-info">
         <h3>${escapeHtml(product.name)}</h3>
-        <p>${productDescription(product)}</p>
         <div class="product-meta">
           <span>${formatCurrency(product.price)}</span>
           <button class="add-btn">Add to Cart</button>
@@ -515,6 +514,10 @@ function masonryTile(product, index) {
   return `
     <button type="button" class="masonry-tile" data-id="${escapeHtml(product._key || product.id)}" style="height:${height}px">
       <img src="${productImage(product, 400)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="imgFallback(this, '${unsplashImage('fallback-' + product.name, 400)}')" />
+      <span class="masonry-tile-info">
+        <strong>${escapeHtml(product.name)}</strong>
+        <em>${formatCurrency(product.price)}</em>
+      </span>
     </button>
   `;
 }
