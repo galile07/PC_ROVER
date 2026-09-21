@@ -523,6 +523,14 @@ function masonryTile(product, index) {
   `;
 }
 
+function carouselCard(product) {
+  return `
+    <button type="button" class="carousel-card product-card" data-id="${escapeHtml(product._key || product.id)}">
+      <img src="${productImage(product, 600)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="imgFallback(this, '${unsplashImage('fallback-' + product.name, 600)}')" />
+    </button>
+  `;
+}
+
 function renderProducts(products) {
   const grids = document.querySelectorAll('[data-products]');
   grids.forEach((grid) => {
@@ -575,7 +583,7 @@ function setupCarousel(carousel, products) {
   const gap = parseFloat(getComputedStyle(carousel).columnGap) || 24;
   const cellSize = Math.max(Math.floor((available - gap * (visible - 1)) / visible), 0);
   const cellsHtml = carousel._products
-    .map((product) => `<div class="carousel-cell" style="flex: 0 0 ${cellSize}px; width: ${cellSize}px">${productCard(product)}</div>`)
+    .map((product) => `<div class="carousel-cell" style="flex: 0 0 ${cellSize}px; width: ${cellSize}px">${carouselCard(product)}</div>`)
     .join('');
   carousel.innerHTML = cellsHtml;
 
