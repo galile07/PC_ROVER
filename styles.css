@@ -853,6 +853,18 @@ body:not(.signed-in) .shop-section {
 }
 
 @media (min-width: 681px) {
+
+  .modal--product .modal-card {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal--product .product-modal-content {
+    flex: 1;
+    min-height: 0;
+  }
+
   .product-modal-content {
     flex-direction: row;
     align-items: stretch;
@@ -867,9 +879,10 @@ body:not(.signed-in) .shop-section {
   }
 
   .product-modal-media .product-modal-image {
-    flex: 1;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 55vh;
     width: 100%;
-    max-height: none;
     border-radius: 1rem;
     object-fit: cover;
   }
@@ -883,6 +896,7 @@ body:not(.signed-in) .shop-section {
   .product-modal-body {
     flex: 1;
     min-width: 0;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -894,6 +908,9 @@ body:not(.signed-in) .shop-section {
 
   .product-modal-body p {
     flex: 1;
+    min-height: 0;
+    margin-bottom: 0;
+    overflow-y: auto;
     font-size: 1.05rem;
   }
 
