@@ -570,8 +570,12 @@ function setupCarousel(carousel, products) {
   }
 
   const visible = carouselVisibleCount();
+  const viewport = carousel.parentElement;
+  const available = (viewport ? viewport.clientWidth : window.innerWidth) || window.innerWidth;
+  const gap = parseFloat(getComputedStyle(carousel).columnGap) || 24;
+  const cellSize = Math.max(Math.floor((available - gap * (visible - 1)) / visible), 0);
   const cellsHtml = carousel._products
-    .map((product) => `<div class="carousel-cell" style="flex: 0 0 ${100 / visible}%">${productCard(product)}</div>`)
+    .map((product) => `<div class="carousel-cell" style="flex: 0 0 ${cellSize}px; width: ${cellSize}px">${productCard(product)}</div>`)
     .join('');
   carousel.innerHTML = cellsHtml;
 
@@ -581,7 +585,10 @@ function setupCarousel(carousel, products) {
   let index = 0;
   let paused = false;
 
-  const step = () => (carousel.children[0] ? carousel.children[0].offsetWidth : 0);
+  const step = () => {
+    const first = carousel.children[0];
+    return first ? first.offsetWidth + gap : 0;
+  };
 
   const setPosition = (target, animate) => {
     if (!animate) carousel.style.transition = 'none';

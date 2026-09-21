@@ -40,6 +40,7 @@ body {
   color: var(--gray-900);
   background: linear-gradient(180deg, #f8fbff 0%, var(--white) 100%);
   line-height: 1.6;
+  overflow-x: hidden;
 }
 
 body.modal-open {
@@ -323,13 +324,9 @@ body.signed-in .search-bar {
   border-radius: 1.5rem;
 }
 
-/* Signed-in: remove hero copy/CTA and show products full width */
+/* Signed-in: keep hero copy visible, products shown in carousel below */
 body.signed-in .hero {
   padding-top: 2rem;
-}
-
-body.signed-in .hero-copy {
-  display: none;
 }
 
 body.signed-in .hero-grid {
@@ -359,18 +356,17 @@ body.signed-in .hero-masonry {
 
 .carousel-viewport {
   overflow: hidden;
-  margin: 0 -0.6rem;
 }
 
 .carousel-track {
   display: flex;
+  gap: 1.2rem;
   transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .carousel-cell {
   flex-shrink: 0;
   min-width: 0;
-  padding: 0 0.6rem;
 }
 
 .carousel-cell .product-card {
