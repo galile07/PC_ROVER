@@ -376,7 +376,7 @@ function signInWithGoogle() {
   const redirectTo = window.location.origin + window.location.pathname;
   supabaseClient.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo },
+    options: { redirectTo, prompt: 'select_account' },
   });
 }
 
