@@ -213,6 +213,12 @@ img {
   display: block;
 }
 
+/* Nav links and Orders hidden until signed in */
+body:not(.signed-in) .nav-links,
+body:not(.signed-in) .cart-btn {
+  display: none;
+}
+
 /* Login text button (guests) */
 .login-text-btn {
   border: 1px solid var(--gray-200);
@@ -274,6 +280,8 @@ body.signed-in .search-bar {
 
 .hero-copy {
   max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .eyebrow {
@@ -346,6 +354,7 @@ body.signed-in .hero-masonry {
   letter-spacing: 0.02em;
   margin: 0 0 1rem;
   color: var(--gray-900);
+  text-align: center;
 }
 
 .carousel-viewport {

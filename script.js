@@ -484,7 +484,7 @@ function productFallbackDescription(product) {
   if (category === 'preowned') {
     return 'Pre-owned unit, quality-checked and ready to ship.';
   }
-  return 'Quality tech product available at PC ROVER BALIWAG.';
+  return 'Quality tech product available at PC ROVER PH.';
 }
 
 function productDescription(product) {
