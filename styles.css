@@ -206,7 +206,7 @@ img {
 /* ---------- Hero ---------- */
 
 .hero {
-  padding: 4rem 0 3rem;
+  padding: 2.5rem 0 3rem;
 }
 
 /* Navigation bar: always visible now, Login button shown for guests */
@@ -275,7 +275,7 @@ body.signed-in .search-bar {
 .hero-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 2rem;
+  gap: 1.5rem;
   align-items: start;
 }
 
@@ -331,7 +331,7 @@ body.signed-in .search-bar {
 
 /* Signed-in: keep hero copy visible, products shown in carousel below */
 body.signed-in .hero {
-  padding-top: 2rem;
+  padding-top: 1.25rem;
 }
 
 body.signed-in .hero-grid {
@@ -1387,7 +1387,7 @@ body.signed-in .hero-masonry {
   }
 
   .hero {
-    padding-top: 2rem;
+    padding-top: 1.25rem;
   }
 
   .hero-grid {
