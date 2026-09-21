@@ -1461,6 +1461,40 @@ body:not(.signed-in) .shop-section {
   color: var(--blue);
 }
 
+.footer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.footer-contact-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--gray-900);
+}
+
+.footer-contact-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--gray-700);
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+}
+
+.footer-contact-item:hover {
+  color: var(--blue);
+}
+
+.footer-contact-item svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
+  stroke: var(--orange);
+  fill: none;
+}
+
 /* ---------- User dropdown ---------- */
 
 .user-menu {
