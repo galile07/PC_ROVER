@@ -14,9 +14,36 @@
   --gray-700: #475569;
   --gray-900: #0f172a;
   --red-600: #dc2626;
+  --on-accent: #ffffff;
+  --bg-soft: #f8fbff;
+  --topbar-bg: rgba(255, 255, 255, 0.9);
   --shadow-sm: 0 10px 24px rgba(15, 23, 42, 0.08);
   --shadow: 0 24px 50px rgba(15, 23, 42, 0.12);
   --radius: 1.1rem;
+}
+
+:root[data-theme='dark'] {
+  --blue: #60a5fa;
+  --blue-dark: #3b82f6;
+  --blue-deep: #93c5fd;
+  --blue-soft: #1e3a8a;
+  --orange: #fb923c;
+  --orange-dark: #fbbf24;
+  --orange-soft: #431407;
+  --white: #0f172a;
+  --gray-50: #0f172a;
+  --gray-100: #1e293b;
+  --gray-200: #334155;
+  --gray-300: #475569;
+  --gray-700: #cbd5e1;
+  --gray-900: #f1f5f9;
+  --red-600: #f87171;
+  --on-accent: #ffffff;
+  --bg-soft: #0b1220;
+  --topbar-bg: rgba(11, 18, 32, 0.85);
+  --shadow-sm: 0 10px 24px rgba(0, 0, 0, 0.35);
+  --shadow: 0 24px 50px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
 }
 
 * {
@@ -38,7 +65,7 @@ body {
   margin: 0;
   font-family: 'Inter', sans-serif;
   color: var(--gray-900);
-  background: linear-gradient(180deg, #f8fbff 0%, var(--white) 100%);
+  background: linear-gradient(180deg, var(--bg-soft) 0%, var(--white) 100%);
   line-height: 1.6;
   overflow-x: hidden;
 }
@@ -69,7 +96,7 @@ img {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--topbar-bg);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba(148, 163, 184, 0.25);
 }
@@ -113,7 +140,7 @@ img {
 
 .nav-links a.active {
   background: var(--blue);
-  color: var(--white);
+  color: var(--on-accent);
 }
 
 /* ---------- Buttons ---------- */
@@ -141,7 +168,7 @@ img {
 
 .btn-primary {
   background: linear-gradient(135deg, var(--blue), var(--blue-dark));
-  color: var(--white);
+  color: var(--on-accent);
   box-shadow: 0 12px 24px rgba(37, 99, 235, 0.24);
 }
 
@@ -156,7 +183,7 @@ img {
 
 .btn-dark {
   background: #0a0a0a;
-  color: var(--white);
+  color: var(--on-accent);
   box-shadow: 0 12px 24px rgba(10, 10, 10, 0.22);
 }
 
@@ -166,7 +193,7 @@ img {
 
 .btn-danger {
   background: var(--red-600);
-  color: var(--white);
+  color: var(--on-accent);
   box-shadow: 0 12px 24px rgba(220, 38, 38, 0.24);
 }
 
@@ -187,7 +214,7 @@ img {
 
 .cart-btn {
   background: var(--blue);
-  color: var(--white);
+  color: var(--on-accent);
   padding: 0.72rem 1.1rem;
 }
 
@@ -237,8 +264,52 @@ body:not(.signed-in) .cart-btn {
 .login-text-btn:hover {
   border-color: var(--blue);
   background: var(--blue);
-  color: var(--white);
+  color: var(--on-accent);
   box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);
+}
+
+/* Dark / light mode toggle (right of Login button) */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-toggle svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.theme-toggle .icon-moon {
+  display: block;
+}
+
+.theme-toggle .icon-sun {
+  display: none;
+}
+
+:root[data-theme='dark'] .theme-toggle .icon-moon {
+  display: none;
+}
+
+:root[data-theme='dark'] .theme-toggle .icon-sun {
+  display: block;
 }
 
 /* Search bar: only visible once signed in */
@@ -464,7 +535,7 @@ body.signed-in .hero-masonry {
   flex-direction: column;
   gap: 0.15rem;
   text-align: left;
-  color: var(--white);
+  color: var(--on-accent);
   background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.78) 100%);
 }
 
@@ -556,7 +627,7 @@ body.signed-in .hero-masonry {
   border-radius: 999px;
   padding: 0.6rem 0.9rem;
   background: var(--orange);
-  color: var(--white);
+  color: var(--on-accent);
   font-weight: 600;
   cursor: pointer;
   transition: filter 0.2s ease, transform 0.2s ease;
@@ -595,7 +666,7 @@ body.signed-in .hero-masonry {
 .tab-button.active {
   background: var(--blue);
   border-color: var(--blue);
-  color: var(--white);
+  color: var(--on-accent);
 }
 
 .tab-panels .tab-panel {
@@ -825,7 +896,7 @@ body.signed-in .hero-masonry {
 
 .confirm-ok {
   background: var(--red-600);
-  color: var(--white);
+  color: var(--on-accent);
   box-shadow: 0 12px 24px rgba(220, 38, 38, 0.24);
 }
 
@@ -882,7 +953,7 @@ body.signed-in .hero-masonry {
 
 .success-ok {
   background: linear-gradient(135deg, var(--blue), var(--blue-dark));
-  color: var(--white);
+  color: var(--on-accent);
   box-shadow: 0 12px 24px rgba(37, 99, 235, 0.24);
 }
 
@@ -927,26 +998,26 @@ body.signed-in .hero-masonry {
 .btn-google--blue {
   border-color: var(--blue);
   background: linear-gradient(120deg, var(--blue), var(--blue-deep));
-  color: var(--white);
+  color: var(--on-accent);
 }
 
 .btn-google--blue:hover {
   border-color: var(--blue-dark);
   background: linear-gradient(120deg, var(--blue-dark), var(--blue-deep));
-  color: var(--white);
+  color: var(--on-accent);
   box-shadow: var(--shadow-sm);
 }
 
 .btn-google--orange {
   border-color: var(--orange);
   background: linear-gradient(120deg, var(--orange), var(--orange-dark));
-  color: var(--white);
+  color: var(--on-accent);
 }
 
 .btn-google--orange:hover {
   border-color: var(--orange-dark);
   background: linear-gradient(120deg, var(--orange-dark), #c2410c);
-  color: var(--white);
+  color: var(--on-accent);
   box-shadow: var(--shadow-sm);
 }
 
@@ -1513,7 +1584,7 @@ body.signed-in .hero-masonry {
   align-items: center;
   gap: 10px;
   background: linear-gradient(120deg, var(--blue), var(--blue-deep));
-  color: var(--white);
+  color: var(--on-accent);
   padding: 12px 20px;
   border-radius: var(--radius);
   box-shadow: var(--shadow);

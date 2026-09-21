@@ -1388,6 +1388,18 @@ function init() {
     });
   }
 
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('pcroverbaliwagTheme', next);
+      } catch (e) {}
+    });
+  }
+
   const googleHeroBtn = document.getElementById('googleHeroBtn');
   if (googleHeroBtn) {
     googleHeroBtn.addEventListener('click', signInWithGoogle);
