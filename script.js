@@ -9,6 +9,7 @@ const paymentForm = document.getElementById('paymentForm');
 const paymentMethod = document.getElementById('paymentMethod');
 const credentialSelect = document.getElementById('credentialSelect');
 const accountStatus = document.getElementById('accountStatus');
+const loginHeaderBtn = document.getElementById('loginHeaderBtn');
 
 // Tab System Variables
 const categoryTabs = document.getElementById('categoryTabs');
@@ -306,6 +307,7 @@ function setSignedInState(user) {
   isSignedIn = true;
   currentUser = user;
   document.body.classList.add('signed-in');
+  if (loginHeaderBtn) loginHeaderBtn.classList.add('hidden');
   if (accountStatus) {
     accountStatus.textContent = `Hi, ${user.name.split(' ')[0]}`;
     accountStatus.classList.remove('hidden');
@@ -323,6 +325,7 @@ function clearUser() {
   currentUser = null;
   credentials = [];
   document.body.classList.remove('signed-in');
+  if (loginHeaderBtn) loginHeaderBtn.classList.remove('hidden');
   localStorage.removeItem('pcroverbaliwagUser');
   localStorage.removeItem('pcroverbaliwagSelectedCredential');
   selectedCredentialId = null;
@@ -1318,6 +1321,8 @@ function init() {
   loadState();
   if (isSignedIn && currentUser) {
     setSignedInState(currentUser);
+  } else if (loginHeaderBtn) {
+    loginHeaderBtn.classList.remove('hidden');
   }
   updateCartCount();
   setActiveNavLink();
@@ -1358,6 +1363,14 @@ function init() {
   const googleSignInBtn = document.getElementById('googleSignInBtn');
   if (googleSignInBtn) {
     googleSignInBtn.addEventListener('click', signInWithGoogle);
+  }
+
+  if (loginHeaderBtn) {
+    loginHeaderBtn.addEventListener('click', () => {
+      clearFormError();
+      setSignInMode(false);
+      openPanel(signInModal);
+    });
   }
 
   const googleHeroBtn = document.getElementById('googleHeroBtn');

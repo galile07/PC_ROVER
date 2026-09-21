@@ -208,9 +208,30 @@ img {
   padding: 4rem 0 3rem;
 }
 
-/* Navigation bar: only visible once signed in */
-body:not(.signed-in) .topbar {
-  display: none;
+/* Navigation bar: always visible now, Login button shown for guests */
+.topbar {
+  display: block;
+}
+
+/* Login text button (guests) */
+.login-text-btn {
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  color: var(--blue);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0.65rem 1.2rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-text-btn:hover {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: var(--white);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);
 }
 
 /* Search bar: only visible once signed in */
