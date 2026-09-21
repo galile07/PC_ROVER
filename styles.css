@@ -807,6 +807,77 @@ body:not(.signed-in) .shop-section {
   color: var(--gray-900);
 }
 
+/* ---------- Product modal ---------- */
+
+.modal--product {
+  width: min(760px, calc(100% - 2rem));
+}
+
+.product-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.product-modal-image {
+  width: 100%;
+  border-radius: 0.9rem;
+  max-height: 260px;
+  object-fit: cover;
+  display: block;
+}
+
+.product-modal-price {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 1.25rem;
+}
+
+.product-modal-body h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+}
+
+.product-modal-body p {
+  margin: 0 0 1rem;
+  color: var(--gray-700);
+}
+
+.product-modal-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.product-modal-actions .btn {
+  flex: 1;
+}
+
+@media (min-width: 681px) {
+  .product-modal-content {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+
+  .product-modal-media {
+    flex: 0 0 40%;
+    max-width: 40%;
+  }
+
+  .product-modal-media .product-modal-image {
+    max-height: none;
+  }
+
+  .product-modal-media .product-modal-price {
+    text-align: center;
+  }
+
+  .product-modal-body {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
 /* ---------- Confirm dialog ---------- */
 
 .confirm-card {
