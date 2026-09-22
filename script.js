@@ -1103,10 +1103,10 @@ function showCancelOrderDialog(order) {
         <p class="confirm-message">Why are you cancelling this order?</p>
         <select class="cancel-reason-select" aria-label="Cancellation reason">
           <option value="">Select a reason…</option>
-          <option value="Not enough payment">Not enough payment</option>
           <option value="Change of mind">Change of mind</option>
           <option value="Rather not say">Rather not say</option>
         </select>
+        <p class="modal-note">If you're asking for a refund, copy your order code and contact the store.</p>
         <div class="confirm-actions">
           <button type="button" class="btn confirm-cancel">Keep Order</button>
           <button type="button" class="btn confirm-ok" disabled>Cancel Order</button>
