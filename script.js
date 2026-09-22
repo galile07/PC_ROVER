@@ -839,7 +839,7 @@ function renderOrders(orders) {
       const itemsHtml = (Array.isArray(order.items) ? order.items : [])
         .map((item) => `${escapeHtml(item.name)} — ${formatCurrency(item.value || 0)}`)
         .join('<br>');
-      const methodText = order.payment_method === 'gcash' ? 'GCash' : 'PICK-UP';
+      const methodText = order.payment_method === 'gcash' ? 'GCASH, Door to Door' : 'GCASH, Pick Up';
       const cancellable = order.status === 'pending';
       card.innerHTML = `
         <div class="order-header">
@@ -1684,7 +1684,7 @@ function init() {
         return sum + (Number.isFinite(value) ? value : 0);
       }, 0);
 
-      if (method === 'gcash') {
+      if (method === 'gcash' || method === 'pickup') {
         await handleGCashCheckout(selectedItems, total, method, selectedCredential);
         return;
       }
