@@ -19,8 +19,6 @@ Deno.serve(async (req) => {
   const secret = req.headers.get('paymongo-signature') || '';
 
   // Only verify the signature when a webhook secret is configured.
-  // In cases where the secret is not yet set (initial testing via the
-  // PayMongo "test event" tester), we still require the header to exist.
   if (webhookSecret) {
     const crypto = await import('node:crypto');
     const expected = crypto.createHmac('sha256', webhookSecret).update(raw).digest('hex');
@@ -37,15 +35,25 @@ Deno.serve(async (req) => {
     return new Response('Invalid JSON', { status: 400 });
   }
 
-  const type = event.type || '';
-  const payment = event.data || {};
-  const attrs = payment.attributes || {};
-  const metadata = attrs.metadata || {};
-  const orderId = metadata.order_id || '';
-  const paymentId = payment.id || '';
-  const referenceNumber = attrs.reference_number || '';
+  // PayMongo event envelope:
+  // event.data.attributes.type         -> event type (e.g. checkout_session.payment.paid)
+  // event.data.attributes.data         -> the full resource (the Checkout Session)
+  // event.data.attributes.data.attributes -> session attributes (metadata, reference_number, payments)
+  const evt = event.data || {};
+  const evtAttrs = evt.attributes || {};
+  const type = evtAttrs.type || '';
+  const session = evtAttrs.data || {};
+  const sessionAttrs = session.attributes || {};
+  const metadata = sessionAttrs.metadata || {};
 
-  // Checkout session events: order id lives in the session metadata.
+  const orderId = metadata.order_id || '';
+  const referenceNumber = sessionAttrs.reference_number || '';
+  const sessionId = session.id || '';
+  const paymentId =
+    (sessionAttrs.payments && sessionAttrs.payments[0] && sessionAttrs.payments[0].id) ||
+    sessionId ||
+    '';
+
   const sessionRef = orderId || referenceNumber || '';
 
   if (!supabaseUrl || !serviceRoleKey) {
@@ -63,7 +71,14 @@ Deno.serve(async (req) => {
           : {}),
     };
 
-    await fetch(`${supabaseUrl}/rest/v1/orders?id=eq.${encodeURIComponent(sessionRef)}`, {
+    let filter;
+    if (orderId) {
+      filter = `id=eq.${encodeURIComponent(orderId)}`;
+    } else {
+      filter = `payment_id=eq.${encodeURIComponent(sessionId)}`;
+    }
+
+    await fetch(`${supabaseUrl}/rest/v1/orders?${filter}`, {
       method: 'PATCH',
       headers: {
         'Authorization': `Bearer ${serviceRoleKey}`,
