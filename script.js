@@ -758,10 +758,14 @@ async function handleGCashCheckout(items, total, method, credential) {
       return;
     }
 
-    cart = cart.filter((item) => !item.selected);
-    saveState();
-    updateCartCount();
-    renderCartPage();
+    localStorage.setItem(
+      'pcroverbaliwagPendingOrder',
+      JSON.stringify({
+        orderId,
+        items: items.map((item) => ({ name: item.name, value: Number(item.value) || 0 })),
+      })
+    );
+
     closePanel(paymentModal);
 
     window.location.href = checkout.checkout_url;
@@ -1867,15 +1871,34 @@ function init() {
   }
 }
 
+function removePaidItemsFromCart(orderId) {
+  const raw = localStorage.getItem('pcroverbaliwagPendingOrder');
+  if (!raw) return;
+  try {
+    const pending = JSON.parse(raw);
+    if (pending.orderId !== orderId) return;
+    const selectedNames = new Set(pending.items.map((item) => item.name));
+    cart = cart.filter((item) => !selectedNames.has(item.name));
+    saveState();
+    updateCartCount();
+    renderCartPage();
+  } catch (e) {
+    console.error('removePaidItemsFromCart', e);
+  } finally {
+    localStorage.removeItem('pcroverbaliwagPendingOrder');
+  }
+}
+
 function handlePayMongoReturn() {
   if (!window.location.pathname.includes('cart')) return;
   const params = new URLSearchParams(window.location.search);
   const paid = params.get('paid');
   const cancelled = params.get('cancelled');
-  if (cancelled) {
-    showToast('Payment was cancelled. Your order is still pending — you can retry from Orders.');
-  } else if (paid) {
-    showToast('Payment started! Your order will show as Paid once confirmed.');
+  if (paid) {
+    removePaidItemsFromCart(paid);
+    showToast('Payment received! Your order will show as Paid once confirmed.');
+  } else if (cancelled) {
+    showToast('Payment was cancelled. Nothing was charged — your items are still in your cart.');
   } else {
     return;
   }
