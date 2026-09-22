@@ -762,7 +762,7 @@ function renderOrders(orders) {
       const itemsHtml = (Array.isArray(order.items) ? order.items : [])
         .map((item) => `${escapeHtml(item.name)} — ${formatCurrency(item.value || 0)}`)
         .join('<br>');
-      const methodText = order.payment_method === 'gcash' ? 'GCash' : 'Cash on Delivery';
+      const methodText = order.payment_method === 'gcash' ? 'GCash' : 'PICK-UP';
       const cancellable = order.status === 'pending';
       card.innerHTML = `
         <div class="order-header">
@@ -1587,7 +1587,7 @@ function init() {
         return;
       }
 
-      const method = paymentMethod?.value || 'cod';
+      const method = paymentMethod?.value || 'gcash';
       const selectedId = credentialSelect?.value;
       const selectedCredential = credentials.find((c) => c.id === selectedId) || credentials[0];
       if (!selectedCredential) {
