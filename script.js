@@ -78,6 +78,8 @@ let allProducts = [];
 
 const ORDER_STATUS_LABELS = {
   pending: 'Pending',
+  paid: 'Paid',
+  payment_failed: 'Payment Failed',
   preparing: 'Preparing',
   shipped: 'Preparing',
   to_ship: 'To Ship',
@@ -714,22 +716,97 @@ async function deleteCredential(id) {
 // ---------- Orders ----------
 
 async function placeOrder(items, total, method, credential) {
-  if (!supabaseClient || !currentUser) return false;
-  const { error } = await supabaseClient.from('orders').insert({
-    user_id: currentUser.id,
-    customer_name: currentUser.name || null,
-    items: items.map((item) => ({ name: item.name, price: item.price, value: Number(item.value) || 0 })),
-    total,
-    payment_method: method,
-    phone: credential.phone,
-    address: credential.address,
-    status: 'pending',
-  });
+  if (!supabaseClient || !currentUser) return null;
+  const { data, error } = await supabaseClient
+    .from('orders')
+    .insert({
+      user_id: currentUser.id,
+      customer_name: currentUser.name || null,
+      items: items.map((item) => ({ name: item.name, price: item.price, value: Number(item.value) || 0 })),
+      total,
+      payment_method: method,
+      phone: credential.phone,
+      address: credential.address,
+      status: 'pending',
+    })
+    .select('id')
+    .single();
   if (error) {
     alert('Failed to place order: ' + error.message);
-    return false;
+    return null;
   }
-  return true;
+  return data?.id || null;
+}
+
+async function handleGCashCheckout(items, total, method, credential) {
+  const submitBtn = paymentForm?.querySelector('button[type="submit"]');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Starting GCash payment…';
+  }
+
+  try {
+    const orderId = await placeOrder(items, total, method, credential);
+    if (!orderId) return;
+
+    const checkout = await createPayMongoCheckout(orderId, items, total, credential);
+    if (!checkout) {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Confirm Checkout';
+      }
+      return;
+    }
+
+    cart = cart.filter((item) => !item.selected);
+    saveState();
+    updateCartCount();
+    renderCartPage();
+    closePanel(paymentModal);
+
+    window.location.href = checkout.checkout_url;
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Confirm Checkout';
+    }
+  }
+}
+
+async function createPayMongoCheckout(orderId, items, total, credential) {
+  if (!window.PAYMONGO_CHECKOUT_FUNCTION) return null;
+  const origin = window.location.origin;
+  const successUrl = `${origin}/cart.html?paid=${encodeURIComponent(orderId || '')}`;
+  const cancelUrl = `${origin}/cart.html?cancelled=${encodeURIComponent(orderId || '')}`;
+
+  const res = await fetch(window.PAYMONGO_CHECKOUT_FUNCTION, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      lineItems: items.map((item) => ({
+        name: item.name,
+        value: Math.round(Number(item.value) || 0) * 100,
+        currency: 'PHP',
+      })),
+      total: Math.round(Number(total) || 0) * 100,
+      successUrl,
+      cancelUrl,
+      referenceNumber: orderId ? `ORDER-${orderId}` : undefined,
+      customerEmail: currentUser?.email || undefined,
+      metadata: { order_id: orderId },
+    }),
+  });
+
+  let json = {};
+  try {
+    json = await res.json();
+  } catch (e) {}
+
+  if (!res.ok || !json.checkout_url) {
+    alert('Could not start GCash payment: ' + (json.error || 'Unknown error. Please try again.'));
+    return null;
+  }
+  return json;
 }
 
 function renderOrders(orders) {
@@ -1607,8 +1684,13 @@ function init() {
         return sum + (Number.isFinite(value) ? value : 0);
       }, 0);
 
-      const ok = await placeOrder(selectedItems, total, method, selectedCredential);
-      if (!ok) return;
+      if (method === 'gcash') {
+        await handleGCashCheckout(selectedItems, total, method, selectedCredential);
+        return;
+      }
+
+      const orderId = await placeOrder(selectedItems, total, method, selectedCredential);
+      if (!orderId) return;
 
       cart = cart.filter((item) => !item.selected);
       saveState();
@@ -1778,10 +1860,30 @@ function init() {
   openSignInIfRequested();
   populateAccountForm();
   renderCartPage();
+  handlePayMongoReturn();
 
   if (year) {
     year.textContent = new Date().getFullYear();
   }
+}
+
+function handlePayMongoReturn() {
+  if (!window.location.pathname.includes('cart')) return;
+  const params = new URLSearchParams(window.location.search);
+  const paid = params.get('paid');
+  const cancelled = params.get('cancelled');
+  if (cancelled) {
+    showToast('Payment was cancelled. Your order is still pending — you can retry from Orders.');
+  } else if (paid) {
+    showToast('Payment started! Your order will show as Paid once confirmed.');
+  } else {
+    return;
+  }
+  loadOrders();
+  const url = new URL(window.location.href);
+  url.searchParams.delete('paid');
+  url.searchParams.delete('cancelled');
+  window.history.replaceState({}, '', url.pathname + url.search);
 }
 
 init();

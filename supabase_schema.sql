@@ -115,29 +115,39 @@ create table if not exists public.orders (
   customer_name text,
   items jsonb not null default '[]'::jsonb,
   total numeric not null default 0,
-  payment_method text not null default 'cod',
+  payment_method text not null default 'gcash',
   phone text,
   address text,
   status text not null default 'pending',
   cancel_reason text,
+  payment_id text,
+  paid_at timestamptz,
   created_at timestamptz not null default now()
 );
 
 create index if not exists orders_user_id_idx on public.orders (user_id);
 
+-- Extra gcash payout columns (added for PayMongo webhook):
+-- Run these lines below in the SQL editor to add columns to an existing
+-- orders table created before this change:
+--   alter table public.orders add column if not exists payment_id text;
+--   alter table public.orders add column if not exists paid_at timestamptz;
+
 -- Only valid order statuses may be stored. Two naming conventions are
 -- accepted so the admin and customer sides always agree:
---   pending    -> customer "Orders" section    (shown as "Pending")
---   completed  -> customer "To Ship" section    (shown as "Preparing")
+--   pending         -> customer "Orders" section       (shown as "Pending")
+--   paid            -> GCash payment confirmed         (shown as "Paid")
+--   payment_failed  -> GCash payment failed            (shown as "Payment Failed")
+--   completed       -> customer "To Ship" section      (shown as "Preparing")
 --     (alias: preparing)
---   shipped    -> customer "To Receive" section (shown as "Shipping")
+--   shipped         -> customer "To Receive" section   (shown as "Shipping")
 --     (alias: shipping)
---   delivered  -> customer "Finished" section   (shown as "Finished")
+--   delivered       -> customer "Finished" section     (shown as "Finished")
 --     (alias: finished)
 alter table public.orders drop constraint if exists orders_status_check;
 alter table public.orders
   add constraint orders_status_check
-  check (status in ('pending', 'completed', 'preparing', 'shipped', 'shipping', 'delivered', 'finished', 'cancelled'));
+  check (status in ('pending', 'paid', 'payment_failed', 'completed', 'preparing', 'shipped', 'shipping', 'delivered', 'finished', 'cancelled'));
 
 alter table public.orders enable row level security;
 
