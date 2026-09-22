@@ -27,7 +27,7 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="styles.css?v=67" />
+    <link rel="stylesheet" href="styles.css?v=68" />
   </head>
   <body class="orders-page">
     <header class="topbar" id="topbar">
@@ -70,6 +70,7 @@
             <button class="tab-button" data-tab="toShipTab">To Ship</button>
             <button class="tab-button" data-tab="toReceiveTab">To Receive</button>
             <button class="tab-button" data-tab="finishedTab">Finished</button>
+            <button class="tab-button" data-tab="cancelledTab">Cancelled</button>
           </div>
 
           <div class="tab-panels">
@@ -107,6 +108,12 @@
             <div class="tab-panel" id="finishedTab">
               <div class="orders-list" id="finishedList">
                 <p class="empty-state">No finished orders yet.</p>
+              </div>
+            </div>
+
+            <div class="tab-panel" id="cancelledTab">
+              <div class="orders-list" id="cancelledList">
+                <p class="empty-state">No cancelled orders.</p>
               </div>
             </div>
           </div>
@@ -197,6 +204,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabaseConfig.js"></script>
     <script src="paymongoConfig.js"></script>
-    <script src="script.js?v=67"></script>
+    <script src="script.js?v=68"></script>
   </body>
 </html>

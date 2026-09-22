@@ -120,6 +120,7 @@ create table if not exists public.orders (
   address text,
   status text not null default 'pending',
   cancel_reason text,
+  cancelled_by text check (cancelled_by in ('user', 'seller')),
   payment_id text,
   paid_at timestamptz,
   created_at timestamptz not null default now()
@@ -163,6 +164,33 @@ create policy "Users can cancel their own pending orders"
   on public.orders for update
   using (auth.uid() = user_id and status = 'pending')
   with check (auth.uid() = user_id and status = 'cancelled');
+
+-- When an order is cancelled without an explicit actor (e.g. the admin
+-- panel or an inventory-sync job), assume the seller/store cancelled it.
+create or replace function public.set_cancelled_by()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.status = 'cancelled' and new.cancelled_by is null then
+    new.cancelled_by := 'seller';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists orders_set_cancelled_by on public.orders;
+create trigger orders_set_cancelled_by
+  before update on public.orders
+  for each row execute procedure public.set_cancelled_by();
+
+-- Purge cancelled orders after 30 days.
+create extension if not exists pg_cron;
+select cron.schedule(
+  'purge-cancelled-orders',
+  '0 3 * * *',
+  $$ delete from public.orders where status = 'cancelled' and created_at < now() - interval '30 days' $$
+);
 
 -- ---------- 5. INVENTORY: readable by logged-in users ----------
 -- The admin panel created RLS on inventory for the anon role only,

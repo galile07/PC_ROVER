@@ -818,6 +818,7 @@ function renderOrders(orders) {
   const toShipList = document.getElementById('toShipList');
   const toReceiveList = document.getElementById('toReceiveList');
   const finishedList = document.getElementById('finishedList');
+  const cancelledList = document.getElementById('cancelledList');
 
   const renderInto = (container, list) => {
     if (!container) return;
@@ -845,6 +846,13 @@ function renderOrders(orders) {
         .join('<br>');
       const methodText = order.payment_method === 'gcash' ? 'GCASH, Door to Door' : 'GCASH, Pick Up';
       const cancellable = order.status === 'pending';
+      const cancelledBy = order.cancelled_by === 'seller' ? 'Seller' : 'User';
+      const cancelledInfo = order.status === 'cancelled'
+        ? `<div class="order-cancel-info">
+             <span>Cancelled by: ${cancelledBy}</span>
+             ${order.cancel_reason ? `<span>Reason: ${escapeHtml(order.cancel_reason)}</span>` : ''}
+           </div>`
+        : '';
       card.innerHTML = `
         <div class="order-header">
           <strong>Order #${escapeHtml(String(order.id).slice(0, 8).toUpperCase())}</strong>
@@ -856,6 +864,7 @@ function renderOrders(orders) {
           <span>Total ${formatCurrency(order.total)}</span>
         </div>
         <div class="order-items">${itemsHtml}</div>
+        ${cancelledInfo}
         ${cancellable ? '<button type="button" class="btn btn-danger btn-sm order-cancel-btn">Cancel Order</button>' : ''}
       `;
       container.appendChild(card);
@@ -867,17 +876,18 @@ function renderOrders(orders) {
     });
   };
 
-  const CANCELLED_VISIBLE_MS = 15 * 24 * 60 * 60 * 1000;
+  const CANCELLED_VISIBLE_MS = 30 * 24 * 60 * 60 * 1000;
   const visibleCancelled = (order) => {
     if (order.status !== 'cancelled') return true;
     const created = new Date(order.created_at).getTime();
     return Number.isFinite(created) && Date.now() - created < CANCELLED_VISIBLE_MS;
   };
 
-  renderInto(ordersList, orders.filter((order) => (order.status === 'pending' || order.status === 'cancelled') && visibleCancelled(order)));
+  renderInto(ordersList, orders.filter((order) => order.status === 'pending'));
   renderInto(toShipList, orders.filter((order) => order.status === 'shipped' || order.status === 'preparing' || order.status === 'to_ship'));
   renderInto(toReceiveList, orders.filter((order) => order.status === 'delivered' || order.status === 'shipping' || order.status === 'to_receive'));
   renderInto(finishedList, orders.filter((order) => order.status === 'completed' || order.status === 'finished'));
+  renderInto(cancelledList, orders.filter((order) => order.status === 'cancelled' && visibleCancelled(order)));
 }
 
 async function loadOrders() {
@@ -1124,7 +1134,7 @@ function showCancelOrderDialog(order) {
       closePanel(cancelReasonDialog);
       const { error } = await supabaseClient
         .from('orders')
-        .update({ status: 'cancelled', cancel_reason: reason })
+        .update({ status: 'cancelled', cancel_reason: reason, cancelled_by: 'user' })
         .eq('id', order.id)
         .eq('user_id', currentUser.id);
       if (error) {

@@ -1415,6 +1415,19 @@ body:not(.signed-in) .shop-section {
   line-height: 1.5;
 }
 
+.order-cancel-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--gray-100);
+  color: var(--gray-700);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
 /* ---------- Empty state ---------- */
 
 .empty-state {
