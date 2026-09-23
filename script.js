@@ -1906,7 +1906,14 @@ function handlePayMongoReturn() {
   const cancelled = params.get('cancelled');
   if (paid) {
     removePaidItemsFromCart(paid);
-    showToast('Payment received! Your order will show as Paid once confirmed.');
+    showSuccessDialog({
+      title: 'Order successfully placed.',
+      message: 'Payment confirmed. Your order will show as Paid once confirmed.',
+      buttonText: 'Go back',
+      onAction: () => {
+        window.location.href = 'index.html';
+      },
+    });
   } else if (cancelled) {
     showToast('Payment was cancelled. Nothing was charged — your items are still in your cart.');
   } else {
