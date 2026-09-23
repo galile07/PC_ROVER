@@ -7,6 +7,7 @@ const closeSignInBtn = document.getElementById('closeSignInBtn');
 const closePaymentBtn = document.getElementById('closePaymentBtn');
 const paymentForm = document.getElementById('paymentForm');
 const paymentMethod = document.getElementById('paymentMethod');
+const pickupNote = document.getElementById('pickupNote');
 const credentialSelect = document.getElementById('credentialSelect');
 const accountStatus = document.getElementById('accountStatus');
 const loginHeaderBtn = document.getElementById('loginHeaderBtn');
@@ -1670,6 +1671,12 @@ function init() {
     });
   }
 
+  if (paymentMethod) {
+    paymentMethod.addEventListener('change', () => {
+      if (pickupNote) pickupNote.classList.toggle('hidden', paymentMethod.value !== 'pickup');
+    });
+  }
+
   if (paymentForm) {
     paymentForm.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -1787,6 +1794,7 @@ function init() {
       }
 
       renderCredentialSelect();
+      if (pickupNote) pickupNote.classList.toggle('hidden', paymentMethod.value !== 'pickup');
       openPanel(paymentModal);
     });
   }
