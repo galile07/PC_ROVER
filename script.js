@@ -847,7 +847,7 @@ function renderOrders(orders) {
         .join('<br>');
       const methodText = order.payment_method === 'gcash' ? 'GCASH, Door to Door' : 'GCASH, Pick Up';
       const cancellable = order.status === 'pending';
-      const cancelledBy = order.cancelled_by === 'seller' ? 'Seller' : 'User';
+      const cancelledBy = order.cancelled_by === 'user' ? 'User' : 'Seller';
       const cancelledInfo = order.status === 'cancelled'
         ? `<div class="order-cancel-info">
              <span>Cancelled by: ${cancelledBy}</span>
@@ -877,18 +877,11 @@ function renderOrders(orders) {
     });
   };
 
-  const CANCELLED_VISIBLE_MS = 30 * 24 * 60 * 60 * 1000;
-  const visibleCancelled = (order) => {
-    if (order.status !== 'cancelled') return true;
-    const created = new Date(order.created_at).getTime();
-    return Number.isFinite(created) && Date.now() - created < CANCELLED_VISIBLE_MS;
-  };
-
   renderInto(ordersList, orders.filter((order) => order.status === 'pending'));
   renderInto(toShipList, orders.filter((order) => order.status === 'shipped' || order.status === 'preparing' || order.status === 'to_ship'));
   renderInto(toReceiveList, orders.filter((order) => order.status === 'delivered' || order.status === 'shipping' || order.status === 'to_receive'));
   renderInto(finishedList, orders.filter((order) => order.status === 'completed' || order.status === 'finished'));
-  renderInto(cancelledList, orders.filter((order) => order.status === 'cancelled' && visibleCancelled(order)));
+  renderInto(cancelledList, orders.filter((order) => order.status === 'cancelled'));
 }
 
 async function loadOrders() {

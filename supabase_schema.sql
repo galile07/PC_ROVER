@@ -184,12 +184,17 @@ create trigger orders_set_cancelled_by
   before update on public.orders
   for each row execute procedure public.set_cancelled_by();
 
--- Purge cancelled orders after 30 days.
+-- Purge only user-cancelled orders after 30 days. Seller/admin-cancelled
+-- orders are kept so customers can always see who cancelled and why.
+-- Re-running this replaces the existing schedule (same job name).
 create extension if not exists pg_cron;
+select cron.unschedule('purge-cancelled-orders') where exists (
+  select 1 from cron.job where jobname = 'purge-cancelled-orders'
+);
 select cron.schedule(
   'purge-cancelled-orders',
   '0 3 * * *',
-  $$ delete from public.orders where status = 'cancelled' and created_at < now() - interval '30 days' $$
+  $$ delete from public.orders where status = 'cancelled' and cancelled_by = 'user' and created_at < now() - interval '30 days' $$
 );
 
 -- ---------- 5. INVENTORY: readable by logged-in users ----------
