@@ -1124,12 +1124,14 @@ function showCancelOrderDialog(order) {
       cancelReasonDialog.querySelector('.confirm-ok').disabled = !event.target.value;
     });
     cancelReasonDialog.querySelector('.confirm-ok').addEventListener('click', async () => {
+      const target = cancelReasonDialog._order;
+      if (!target) return;
       const reason = cancelReasonDialog.querySelector('.cancel-reason-select').value;
       closePanel(cancelReasonDialog);
       const { error } = await supabaseClient
         .from('orders')
         .update({ status: 'cancelled', cancel_reason: reason, cancelled_by: 'user' })
-        .eq('id', order.id)
+        .eq('id', target.id)
         .eq('user_id', currentUser.id);
       if (error) {
         showToast('Failed to cancel order. Try again.');
@@ -1139,6 +1141,7 @@ function showCancelOrderDialog(order) {
       loadOrders();
     });
   }
+  cancelReasonDialog._order = order;
   cancelReasonDialog.querySelector('.cancel-reason-select').value = '';
   cancelReasonDialog.querySelector('.confirm-ok').disabled = true;
   openPanel(cancelReasonDialog);
