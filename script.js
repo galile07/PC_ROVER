@@ -848,19 +848,14 @@ function renderOrders(orders) {
       const methodText = order.payment_method === 'gcash' ? 'GCASH, Door to Door' : 'GCASH, Pick Up';
       const cancellable = order.status === 'pending';
       const cancelledBy = order.cancelled_by === 'user' ? 'User' : 'Seller';
-      if (order.status === 'cancelled') {
-        console.log('[cancelled order]', {
-          id: order.id,
-          cancelled_by: order.cancelled_by,
-          cancel_reason: order.cancel_reason,
-          all_fields: Object.keys(order),
-          raw: order,
-        });
-      }
+      const cancelledReason =
+        order.cancelled_by === 'user'
+          ? order.cancel_reason
+          : (order.cancelled_reason || order.cancel_reason);
       const cancelledInfo = order.status === 'cancelled'
         ? `<div class="order-cancel-info">
              <span>Cancelled by: ${cancelledBy}</span>
-             ${order.cancel_reason ? `<span>Reason: ${escapeHtml(order.cancel_reason)}</span>` : ''}
+             ${cancelledReason ? `<span>Reason: ${escapeHtml(cancelledReason)}</span>` : ''}
            </div>`
         : '';
       card.innerHTML = `

@@ -120,6 +120,7 @@ create table if not exists public.orders (
   address text,
   status text not null default 'pending',
   cancel_reason text,
+  cancelled_reason text,
   cancelled_by text check (cancelled_by in ('user', 'seller')),
   payment_id text,
   paid_at timestamptz,
