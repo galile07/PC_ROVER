@@ -1842,7 +1842,11 @@ function init() {
     modalAddToCartBtn.addEventListener('click', () => {
       if (!currentSelectedProduct) return;
       if (!requireSignIn()) return;
-      const qty = modalProductQty ? Number(modalProductQty.value) || 1 : 1;
+      const qty = modalProductQty ? Number(modalProductQty.value) || 0 : 1;
+      if (qty < 1) {
+        showToast("You can't add to cart or checkout a product with zero amount.");
+        return;
+      }
       addToCart(currentSelectedProduct, qty);
 
       if (currentAddButtonEl) {
@@ -1861,8 +1865,8 @@ function init() {
     modalProductQty.addEventListener('input', () => {
       const max = currentSelectedProduct ? currentSelectedProduct.stock : 1;
       const digits = modalProductQty.value.replace(/[^0-9]/g, '').replace(/^0+/, '');
-      let n = digits ? Number(digits) : 1;
-      if (n < 1) n = 1;
+      let n = digits ? Number(digits) : 0;
+      if (n < 0) n = 0;
       if (max > 0 && n > max) n = max;
       modalProductQty.value = String(n);
     });
@@ -1872,7 +1876,11 @@ function init() {
     modalCheckoutBtn.addEventListener('click', () => {
       if (!currentSelectedProduct) return;
       if (!requireSignIn()) return;
-      const qty = modalProductQty ? Number(modalProductQty.value) || 1 : 1;
+      const qty = modalProductQty ? Number(modalProductQty.value) || 0 : 1;
+      if (qty < 1) {
+        showToast("You can't add to cart or checkout a product with zero amount.");
+        return;
+      }
       addToCart(currentSelectedProduct, qty);
       window.location.href = 'cart.html';
     });
