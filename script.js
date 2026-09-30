@@ -846,7 +846,7 @@ function renderOrders(orders) {
         .map((item) => `${escapeHtml(item.name)} — ${formatCurrency(item.value || 0)}`)
         .join('<br>');
       const methodText = order.payment_method === 'gcash' ? 'GCASH, Door to Door' : 'GCASH, Pick Up';
-      const cancellable = order.status === 'pending';
+      const cancellable = order.status === 'pending' || order.status === 'preparing';
       const cancelledBy = order.cancelled_by === 'user' ? 'User' : 'Seller';
       const cancelledReason =
         order.cancelled_by === 'user'
