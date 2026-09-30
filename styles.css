@@ -852,6 +852,39 @@ body:not(.signed-in) .shop-section {
   flex: 1;
 }
 
+.product-modal-qty {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0 0 1rem;
+}
+
+.product-modal-qty label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.product-modal-qty input {
+  width: 100px;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.7rem;
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  color: var(--gray-900);
+  font-size: 1rem;
+  text-align: center;
+}
+
+.product-modal-qty .product-modal-stock {
+  font-size: 0.85rem;
+  color: var(--gray-700);
+}
+
+.product-modal-qty .product-modal-stock strong {
+  color: var(--gray-900);
+}
+
 @media (min-width: 681px) {
 
   .modal--product .modal-card {

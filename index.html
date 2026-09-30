@@ -154,6 +154,11 @@
           <div class="product-modal-body">
             <h2 id="modalProductTitle"></h2>
             <p id="modalProductDesc"></p>
+            <div class="product-modal-qty">
+              <label for="modalProductQty">Amount</label>
+              <input type="text" id="modalProductQty" value="1" inputmode="numeric" autocomplete="off" />
+              <span class="product-modal-stock">Stock: <strong id="modalProductStock"></strong></span>
+            </div>
             <div class="product-modal-actions">
               <button class="btn btn-secondary" id="modalAddToCartBtn">Add to Cart</button>
               <button class="btn btn-primary" id="modalCheckoutBtn">Checkout</button>
@@ -166,6 +171,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabaseConfig.js"></script>
     <script src="paymongoConfig.js"></script>
-    <script src="script.js?v=73"></script>
+    <script src="script.js?v=76"></script>
   </body>
 </html>

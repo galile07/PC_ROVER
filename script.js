@@ -43,6 +43,8 @@ const modalProductDesc = document.getElementById('modalProductDesc');
 const modalProductPrice = document.getElementById('modalProductPrice');
 const modalAddToCartBtn = document.getElementById('modalAddToCartBtn');
 const modalCheckoutBtn = document.getElementById('modalCheckoutBtn');
+const modalProductQty = document.getElementById('modalProductQty');
+const modalProductStock = document.getElementById('modalProductStock');
 const toggleSignUpBtn = document.getElementById('toggleSignUpBtn');
 const signInEmail = document.getElementById('signInEmail');
 const signInPassword = document.getElementById('signInPassword');
@@ -723,7 +725,7 @@ async function placeOrder(items, total, method, credential) {
     .insert({
       user_id: currentUser.id,
       customer_name: currentUser.name || null,
-      items: items.map((item) => ({ name: item.name, price: item.price, value: Number(item.value) || 0 })),
+      items: items.map((item) => ({ name: item.name, price: item.price, value: Number(item.value) || 0, qty: Number(item.qty) || 1 })),
       total,
       payment_method: method,
       phone: credential.phone,
@@ -788,11 +790,11 @@ async function createPayMongoCheckout(orderId, items, total, credential) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      lineItems: items.map((item) => ({
-        name: item.name,
-        value: Math.round(Number(item.value) || 0) * 100,
-        currency: 'PHP',
-      })),
+      lineItems: items.flatMap((item) => {
+        const unit = Math.round(Number(item.value) || 0) * 100;
+        const qty = Math.max(1, Number(item.qty) || 1);
+        return Array.from({ length: qty }, () => ({ name: item.name, value: unit, currency: 'PHP' }));
+      }),
       total: Math.round(Number(total) || 0) * 100,
       successUrl,
       cancelUrl,
@@ -843,7 +845,12 @@ function renderOrders(orders) {
             timeZone: 'Asia/Manila',
           });
       const itemsHtml = (Array.isArray(order.items) ? order.items : [])
-        .map((item) => `${escapeHtml(item.name)} — ${formatCurrency(item.value || 0)}`)
+        .map((item) => {
+          const itemQty = Number(item.qty) || 1;
+          const itemTotal = (Number(item.value) || 0) * itemQty;
+          const label = itemQty > 1 ? `${item.name} × ${itemQty}` : item.name;
+          return `${escapeHtml(label)} — ${formatCurrency(itemTotal)}`;
+        })
         .join('<br>');
       const methodText = order.payment_method === 'gcash' ? 'GCASH, Door to Door' : 'GCASH, Pick Up';
       const cancellable = order.status === 'pending' || order.status === 'preparing';
@@ -923,12 +930,13 @@ function renderCartPage() {
 
     const itemEl = document.createElement('div');
     itemEl.className = 'cart-item';
+    const itemQty = Number(item.qty) || 1;
     itemEl.innerHTML = `
       <label class="cart-checkbox">
         <input type="checkbox" data-index="${index}" ${item.selected ? 'checked' : ''} />
         <div class="cart-item-details">
           <strong>${escapeHtml(item.name)}</strong>
-          <span>${item.price}</span>
+          <span>${item.price}${itemQty > 1 ? ` × ${itemQty}` : ''}</span>
         </div>
       </label>
       <div class="cart-item-thumb">
@@ -941,7 +949,7 @@ function renderCartPage() {
     const itemValue = Number(item.value);
     const priceValue = Number.isNaN(itemValue) ? parseCurrencyValue(item.price) : itemValue;
     if (item.selected) {
-      total += priceValue;
+      total += priceValue * itemQty;
       selectedCount += 1;
     }
   });
@@ -986,16 +994,18 @@ function renderCartPage() {
   cartTotal.textContent = formatCurrency(total);
 }
 
-function addToCart(product) {
+function addToCart(product, qty = 1) {
+  const q = Math.max(1, Number(qty) || 1);
   cart.push({
     name: product.name,
     price: product.price,
     value: product.value,
+    qty: q,
     selected: true,
   });
   saveState();
   updateCartCount();
-  showToast('A product has successfully added to cart');
+  showToast(q > 1 ? `${q} × ${product.name} added to cart` : 'A product has successfully added to cart');
 }
 
 // ---------- Toast notifications ----------
@@ -1206,6 +1216,7 @@ function openProductModal(product, addButtonEl) {
     desc: (product.description || '').trim() || productFallbackDescription(product),
     imgSrc: productImage(product, 900),
     imgAlt: product.name,
+    stock: Math.max(1, Number(product.stock) || 1),
   };
   currentAddButtonEl = addButtonEl || null;
 
@@ -1218,6 +1229,8 @@ function openProductModal(product, addButtonEl) {
   if (modalProductTitle) modalProductTitle.textContent = currentSelectedProduct.name;
   if (modalProductDesc) modalProductDesc.textContent = currentSelectedProduct.desc;
   if (modalProductPrice) modalProductPrice.textContent = currentSelectedProduct.price;
+  if (modalProductStock) modalProductStock.textContent = currentSelectedProduct.stock;
+  if (modalProductQty) modalProductQty.value = '1';
 
   openPanel(productModal);
 }
@@ -1702,7 +1715,8 @@ function init() {
 
       const total = selectedItems.reduce((sum, item) => {
         const value = Number(item.value);
-        return sum + (Number.isFinite(value) ? value : 0);
+        const itemQty = Number(item.qty) || 1;
+        return sum + (Number.isFinite(value) ? value * itemQty : 0);
       }, 0);
 
       if (method === 'gcash' || method === 'pickup') {
@@ -1818,7 +1832,8 @@ function init() {
     modalAddToCartBtn.addEventListener('click', () => {
       if (!currentSelectedProduct) return;
       if (!requireSignIn()) return;
-      addToCart(currentSelectedProduct);
+      const qty = modalProductQty ? Number(modalProductQty.value) || 1 : 1;
+      addToCart(currentSelectedProduct, qty);
 
       if (currentAddButtonEl) {
         currentAddButtonEl.textContent = 'Added';
@@ -1832,11 +1847,23 @@ function init() {
     });
   }
 
+  if (modalProductQty) {
+    modalProductQty.addEventListener('input', () => {
+      const max = currentSelectedProduct ? currentSelectedProduct.stock : 1;
+      const digits = modalProductQty.value.replace(/[^0-9]/g, '').replace(/^0+/, '');
+      let n = digits ? Number(digits) : 1;
+      if (n < 1) n = 1;
+      if (max > 0 && n > max) n = max;
+      modalProductQty.value = String(n);
+    });
+  }
+
   if (modalCheckoutBtn) {
     modalCheckoutBtn.addEventListener('click', () => {
       if (!currentSelectedProduct) return;
       if (!requireSignIn()) return;
-      addToCart(currentSelectedProduct);
+      const qty = modalProductQty ? Number(modalProductQty.value) || 1 : 1;
+      addToCart(currentSelectedProduct, qty);
       window.location.href = 'cart.html';
     });
   }
