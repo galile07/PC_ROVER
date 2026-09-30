@@ -786,6 +786,15 @@ async function createPayMongoCheckout(orderId, items, total, credential) {
   const successUrl = `${origin}/cart.html?paid=${encodeURIComponent(orderId || '')}`;
   const cancelUrl = `${origin}/cart.html?cancelled=${encodeURIComponent(orderId || '')}`;
 
+  const billing = {
+    name: currentUser?.name || undefined,
+    email: currentUser?.email || undefined,
+    phone: credential?.phone || undefined,
+    ...(credential?.address
+      ? { address: { line1: String(credential.address), country: 'PH' } }
+      : {}),
+  };
+
   const res = await fetch(window.PAYMONGO_CHECKOUT_FUNCTION, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -800,6 +809,7 @@ async function createPayMongoCheckout(orderId, items, total, credential) {
       cancelUrl,
       referenceNumber: orderId ? `ORDER-${orderId}` : undefined,
       customerEmail: currentUser?.email || undefined,
+      billing,
       metadata: { order_id: orderId },
     }),
   });

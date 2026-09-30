@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { lineItems, successUrl, cancelUrl, referenceNumber, customerEmail, metadata } = body;
+    const { lineItems, successUrl, cancelUrl, referenceNumber, customerEmail, billing, metadata } = body;
 
     if (!Array.isArray(lineItems) || !lineItems.length) {
       return new Response(JSON.stringify({ error: 'lineItems is required' }), {
@@ -64,6 +64,7 @@ Deno.serve(async (req) => {
           success_url: successUrl,
           cancel_url: cancelUrl,
           ...(customerEmail ? { customer_email: customerEmail } : {}),
+          ...(billing && typeof billing === 'object' ? { billing } : {}),
           ...(referenceNumber ? { reference_number: String(referenceNumber) } : {}),
           ...(metadata ? { metadata } : {}),
         },
