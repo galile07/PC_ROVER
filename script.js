@@ -271,7 +271,8 @@ function saveState() {
 function updateCartCount() {
   const currentCartCountEl = document.getElementById('cartCount');
   if (currentCartCountEl) {
-    currentCartCountEl.textContent = cart.length;
+    const count = cart.reduce((sum, item) => sum + (Number(item.qty) || 1), 0);
+    currentCartCountEl.textContent = count;
   }
 }
 
@@ -765,7 +766,7 @@ async function handleGCashCheckout(items, total, method, credential) {
       'pcroverbaliwagPendingOrder',
       JSON.stringify({
         orderId,
-        items: items.map((item) => ({ name: item.name, value: Number(item.value) || 0 })),
+        items: items.map((item) => ({ name: item.name, value: Number(item.value) || 0, qty: Math.max(1, Number(item.qty) || 1) })),
       })
     );
 
@@ -946,7 +947,7 @@ function renderCartPage() {
         <input type="checkbox" data-index="${index}" ${item.selected ? 'checked' : ''} />
         <div class="cart-item-details">
           <strong>${escapeHtml(item.name)}</strong>
-          <span>${item.price}${itemQty > 1 ? ` × ${itemQty}` : ''}</span>
+          <span>${escapeHtml(item.price)}${itemQty > 1 ? ` × ${itemQty}` : ''}</span>
         </div>
       </label>
       <div class="cart-item-thumb">
@@ -1005,17 +1006,28 @@ function renderCartPage() {
 }
 
 function addToCart(product, qty = 1) {
-  const q = Math.max(1, Number(qty) || 1);
-  cart.push({
-    name: product.name,
-    price: product.price,
-    value: product.value,
-    qty: q,
-    selected: true,
-  });
+  const max = Math.max(0, Number(product.stock) || 0);
+  let q = Math.max(1, Number(qty) || 1);
+  if (max > 0) q = Math.min(q, max);
+
+  const existing = cart.find((item) => item.name === product.name);
+  if (existing) {
+    const nextQty = Math.max(1, Number(existing.qty) || 1) + q;
+    existing.qty = max > 0 ? Math.min(nextQty, max) : nextQty;
+    existing.selected = true;
+  } else {
+    cart.push({
+      name: product.name,
+      price: product.price,
+      value: product.value,
+      qty: q,
+      selected: true,
+    });
+  }
   saveState();
   updateCartCount();
-  showToast(q > 1 ? `${q} × ${product.name} added to cart` : 'A product has successfully added to cart');
+  const lineQty = existing ? Math.max(1, Number(existing.qty) || 1) : q;
+  showToast(lineQty > 1 ? `${lineQty} × ${product.name} added to cart` : 'A product has successfully added to cart');
 }
 
 // ---------- Toast notifications ----------
@@ -1940,8 +1952,30 @@ function removePaidItemsFromCart(orderId) {
   try {
     const pending = JSON.parse(raw);
     if (pending.orderId !== orderId) return;
-    const selectedNames = new Set(pending.items.map((item) => item.name));
-    cart = cart.filter((item) => !selectedNames.has(item.name));
+    const paidByName = new Map();
+    (Array.isArray(pending.items) ? pending.items : []).forEach((item) => {
+      const entry = paidByName.get(item.name) || { qty: 0, removeWholeLine: false };
+      if (item.qty == null) {
+        entry.removeWholeLine = true;
+      } else {
+        entry.qty += Math.max(1, Number(item.qty) || 1);
+      }
+      paidByName.set(item.name, entry);
+    });
+
+    cart = cart.filter((item) => {
+      const entry = paidByName.get(item.name);
+      if (!entry || !item.selected) return true;
+      if (entry.removeWholeLine) return false;
+      const lineQty = Math.max(1, Number(item.qty) || 1);
+      if (entry.qty >= lineQty) {
+        entry.qty -= lineQty;
+        return false;
+      }
+      item.qty = lineQty - entry.qty;
+      entry.qty = 0;
+      return true;
+    });
     saveState();
     updateCartCount();
     renderCartPage();
