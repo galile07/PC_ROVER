@@ -1875,12 +1875,14 @@ function init() {
 
   if (modalProductQty) {
     modalProductQty.addEventListener('input', () => {
-      const max = currentSelectedProduct ? currentSelectedProduct.stock : 1;
-      const digits = modalProductQty.value.replace(/[^0-9]/g, '').replace(/^0+/, '');
-      let n = digits ? Number(digits) : 0;
-      if (n < 0) n = 0;
-      if (max > 0 && n > max) n = max;
-      modalProductQty.value = String(n);
+      const max = currentSelectedProduct ? currentSelectedProduct.stock : 0;
+      let clean = modalProductQty.value.replace(/[^0-9]/g, '').replace(/^0+(?=\d)/, '');
+      if (clean !== '' && max > 0 && Number(clean) > max) {
+        clean = String(max);
+      }
+      if (clean !== modalProductQty.value) {
+        modalProductQty.value = clean;
+      }
     });
   }
 
