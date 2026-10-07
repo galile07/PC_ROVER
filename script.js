@@ -14,7 +14,6 @@ const loginHeaderBtn = document.getElementById('loginHeaderBtn');
 
 // Tab System Variables
 const categoryTabs = document.getElementById('categoryTabs');
-const accountTabs = document.getElementById('accountTabs');
 const cartTabs = document.getElementById('cartTabs');
 
 const loginForm = document.getElementById('loginForm');
@@ -207,6 +206,34 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function normalizePHMobile(value) {
+  let digits = String(value == null ? '' : value).replace(/\D+/g, '');
+  if (digits.startsWith('63') && digits.length >= 12) {
+    digits = '0' + digits.slice(2);
+  }
+  if (digits.length > 11) digits = digits.slice(0, 11);
+  return digits;
+}
+
+function isValidPHMobile(value) {
+  return /^09\d{9}$/.test(value);
+}
+
+function setPhoneError(input, message) {
+  if (!input) return;
+  let errorEl = input.parentElement ? input.parentElement.querySelector('.field-error') : null;
+  if (!message) {
+    if (errorEl) errorEl.remove();
+    return;
+  }
+  if (!errorEl) {
+    errorEl = document.createElement('small');
+    errorEl.className = 'field-error';
+    if (input.parentElement) input.parentElement.appendChild(errorEl);
+  }
+  errorEl.textContent = message;
+}
+
 function showFormError(message, isSuccess) {
   if (signInError) {
     signInError.textContent = message;
@@ -321,7 +348,7 @@ function setSignedInState(user) {
   if (accountNameInput && accountEmailInput) {
     accountNameInput.value = user.name;
     accountEmailInput.value = user.email;
-    if (accountPhoneInput) accountPhoneInput.value = user.phone || '';
+    if (accountPhoneInput) accountPhoneInput.value = user.phone ? normalizePHMobile(user.phone) : '';
   }
   saveState();
 }
@@ -1402,7 +1429,7 @@ function renderCredentialList() {
       const id = e.target.dataset.id;
       const cred = credentials.find((c) => c.id === id);
       if (!cred) return;
-      credentialPhoneInput.value = cred.phone;
+      credentialPhoneInput.value = normalizePHMobile(cred.phone);
       credentialAddressInput.value = cred.address;
       editingCredentialId = id;
       if (addCredentialBtn) addCredentialBtn.textContent = 'Save';
@@ -1442,7 +1469,7 @@ function populateAccountForm() {
   if (!currentUser || !accountNameInput || !accountEmailInput) return;
   accountNameInput.value = currentUser.name;
   accountEmailInput.value = currentUser.email;
-  if (accountPhoneInput) accountPhoneInput.value = currentUser.phone || '';
+  if (accountPhoneInput) accountPhoneInput.value = currentUser.phone ? normalizePHMobile(currentUser.phone) : '';
   renderCredentialList();
 }
 
@@ -1793,6 +1820,15 @@ function init() {
       event.preventDefault();
       if (!accountNameInput || !accountEmailInput || !currentUser) return;
 
+      if (accountPhoneInput && accountPhoneInput.value.trim()) {
+        accountPhoneInput.value = normalizePHMobile(accountPhoneInput.value);
+        if (!isValidPHMobile(accountPhoneInput.value)) {
+          setPhoneError(accountPhoneInput, 'Enter a valid 11-digit mobile number starting with 09.');
+          return;
+        }
+        setPhoneError(accountPhoneInput, '');
+      }
+
       const { error } = await supabaseClient
         .from('profiles')
         .update({
@@ -1815,12 +1851,18 @@ function init() {
   if (addCredentialBtn) {
     addCredentialBtn.addEventListener('click', async () => {
       if (!credentialPhoneInput || !credentialAddressInput) return;
-      const phoneValue = credentialPhoneInput.value.trim();
+      const phoneValue = normalizePHMobile(credentialPhoneInput.value.trim());
       const addressValue = credentialAddressInput.value.trim();
       if (!phoneValue || !addressValue) {
         alert('Please enter both phone number and delivery address.');
         return;
       }
+      if (!isValidPHMobile(phoneValue)) {
+        setPhoneError(credentialPhoneInput, 'Enter a valid 11-digit mobile number starting with 09.');
+        return;
+      }
+      credentialPhoneInput.value = phoneValue;
+      setPhoneError(credentialPhoneInput, '');
 
       const ok = await saveCredential(phoneValue, addressValue);
       if (!ok) return;
@@ -1832,6 +1874,20 @@ function init() {
       await loadCredentials();
     });
   }
+
+  const phoneInputs = [accountPhoneInput, credentialPhoneInput].filter(Boolean);
+  phoneInputs.forEach((input) => {
+    input.addEventListener('input', () => {
+      input.value = input.value.replace(/\D+/g, '').slice(0, 13);
+      setPhoneError(input, '');
+    });
+    input.addEventListener('blur', () => {
+      if (input.value.trim()) {
+        input.value = normalizePHMobile(input.value);
+        setPhoneError(input, isValidPHMobile(input.value) ? '' : 'Enter a valid 11-digit mobile number starting with 09.');
+      }
+    });
+  });
 
   if (checkoutBtn) {
     checkoutBtn.addEventListener('click', () => {
@@ -1920,10 +1976,6 @@ function init() {
   // --- Initialize All Tab Containers ---
   if (categoryTabs) {
     setupTabs(categoryTabs);
-  }
-
-  if (accountTabs) {
-    setupTabs(accountTabs);
   }
 
   if (cartTabs) {

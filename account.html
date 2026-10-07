@@ -27,7 +27,7 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="styles.css?v=70" />
+    <link rel="stylesheet" href="styles.css?v=71" />
   </head>
   <body>
     <header class="topbar" id="topbar">
@@ -63,9 +63,6 @@
             <h2>Manage your account</h2>
             <p>Update personal info and delivery settings.</p>
           </div>
-          <div class="tabs account-tabs" id="accountTabs">
-            <button class="tab-button active" data-tab="profileTab">Profile</button>
-          </div>
           <div class="tab-panels account-panels">
             <div class="tab-panel active" id="profileTab">
               <form id="accountForm" class="form-card">
@@ -80,7 +77,7 @@
                 </label>
                 <label>
                   Phone number
-                  <input type="tel" id="accountPhone" placeholder="+63 912 345 6789" />
+                  <input type="tel" id="accountPhone" placeholder="09123456789" inputmode="numeric" maxlength="13" />
                 </label>
                 
                 <div class="credentials-section" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--gray-100);">
@@ -98,7 +95,7 @@
                     <div style="display: grid; gap: 1rem;">
                       <label>
                         Contact number for delivery
-                        <input type="tel" id="credentialPhone" placeholder="+63 912 345 6789" />
+                        <input type="tel" id="credentialPhone" placeholder="09123456789" inputmode="numeric" maxlength="13" />
                       </label>
                       <label>
                         Delivery address
@@ -176,6 +173,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabaseConfig.js"></script>
     <script src="paymongoConfig.js"></script>
-    <script src="script.js?v=84"></script>
+    <script src="script.js?v=85"></script>
   </body>
 </html>

@@ -2106,6 +2106,14 @@ body:not(.signed-in) .shop-section {
   border: none;
 }
 
+.field-error {
+  display: block;
+  color: #dc2626;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-top: 0.35rem;
+}
+
 @media (max-width: 860px) {
   .checkout-layout {
     grid-template-columns: 1fr;
