@@ -27,7 +27,7 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="styles.css?v=68" />
+    <link rel="stylesheet" href="styles.css?v=69" />
   </head>
   <body class="orders-page">
     <header class="topbar" id="topbar">
@@ -178,33 +178,9 @@
       </div>
     </div>
 
-    <div class="modal hidden" id="paymentModal">
-      <div class="modal-card">
-        <button class="modal-close" id="closePaymentBtn">×</button>
-        <p class="eyebrow">Checkout</p>
-        <h2>Select payment and delivery credentials</h2>
-        <form id="paymentForm" class="form-card">
-          <label>
-            Payment and delivery method
-            <select id="paymentMethod">
-              <option value="gcash">GCASH, Door to Door</option>
-              <option value="pickup">GCASH, Pick Up</option>
-            </select>
-          </label>
-          <p class="modal-note pickup-note hidden" id="pickupNote">Once our store has accepted your order, we will contact you to arrange your pickup date.</p>
-          <label>
-            Delivery credential
-            <select id="credentialSelect"></select>
-          </label>
-          <button type="submit" class="btn btn-primary">Confirm Checkout</button>
-        </form>
-        <p class="modal-note">You can choose saved delivery credentials from your account.</p>
-      </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabaseConfig.js"></script>
     <script src="paymongoConfig.js"></script>
-    <script src="script.js?v=82"></script>
+    <script src="script.js?v=83"></script>
   </body>
 </html>

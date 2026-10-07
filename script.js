@@ -743,7 +743,7 @@ async function placeOrder(items, total, method, credential) {
 }
 
 async function handleGCashCheckout(items, total, method, credential) {
-  const submitBtn = paymentForm?.querySelector('button[type="submit"]');
+  const submitBtn = document.getElementById('checkoutSubmitBtn') || paymentForm?.querySelector('button[type="submit"]');
   if (submitBtn) {
     submitBtn.disabled = true;
     submitBtn.textContent = 'Starting GCash payment…';
@@ -757,7 +757,7 @@ async function handleGCashCheckout(items, total, method, credential) {
     if (!checkout) {
       if (submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Confirm Checkout';
+        submitBtn.textContent = 'Pay with GCash';
       }
       return;
     }
@@ -776,7 +776,7 @@ async function handleGCashCheckout(items, total, method, credential) {
   } finally {
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Confirm Checkout';
+      submitBtn.textContent = 'Pay with GCash';
     }
   }
 }
@@ -784,8 +784,8 @@ async function handleGCashCheckout(items, total, method, credential) {
 async function createPayMongoCheckout(orderId, items, total, credential) {
   if (!window.PAYMONGO_CHECKOUT_FUNCTION) return null;
   const origin = window.location.origin;
-  const successUrl = `${origin}/cart.html?paid=${encodeURIComponent(orderId || '')}`;
-  const cancelUrl = `${origin}/cart.html?cancelled=${encodeURIComponent(orderId || '')}`;
+  const successUrl = `${origin}/checkout.html?paid=${encodeURIComponent(orderId || '')}`;
+  const cancelUrl = `${origin}/checkout.html?cancelled=${encodeURIComponent(orderId || '')}`;
 
   const billing = {
     name: currentUser?.name || undefined,
@@ -1308,7 +1308,7 @@ function protectNavLinks() {
 }
 
 function enforceProtectedPageAccess() {
-  const protectedPages = ['account.html', 'cart.html'];
+  const protectedPages = ['account.html', 'cart.html', 'checkout.html'];
   let currentPage = window.location.pathname.split('/').pop().toLowerCase();
   if (!currentPage) {
     currentPage = 'index.html';
@@ -1450,6 +1450,10 @@ function init() {
   loadState();
   if (isSignedIn && currentUser) {
     setSignedInState(currentUser);
+    if (currentUser.id) {
+      loadCredentials();
+      loadOrders();
+    }
   } else if (loginHeaderBtn) {
     loginHeaderBtn.classList.remove('hidden');
   }
@@ -1839,9 +1843,8 @@ function init() {
         return;
       }
 
-      renderCredentialSelect();
-      if (pickupNote) pickupNote.classList.toggle('hidden', paymentMethod.value !== 'pickup');
-      openPanel(paymentModal);
+      saveState();
+      window.location.href = 'checkout.html';
     });
   }
 
@@ -1952,10 +1955,406 @@ function init() {
   populateAccountForm();
   renderCartPage();
   handlePayMongoReturn();
+  initCheckoutPage();
 
   if (year) {
     year.textContent = new Date().getFullYear();
   }
+}
+
+let currentReceiptOrder = null;
+
+function checkoutSelectedItems() {
+  return cart.filter((item) => item.selected);
+}
+
+function checkoutItemValue(item) {
+  const value = Number(item.value);
+  return Number.isFinite(value) ? value : parseCurrencyValue(item.price);
+}
+
+function renderCheckoutSummary() {
+  const container = document.getElementById('checkoutItems');
+  if (!container) return;
+  const totalEl = document.getElementById('checkoutTotal');
+  const selected = checkoutSelectedItems();
+
+  if (!selected.length) {
+    container.innerHTML = '<p class="empty-state">No items selected. <a class="modal-link" href="cart.html">Back to cart</a></p>';
+    if (totalEl) totalEl.textContent = formatCurrency(0);
+    return;
+  }
+
+  let total = 0;
+  container.innerHTML = '';
+  selected.forEach((item) => {
+    const qty = Math.max(1, Number(item.qty) || 1);
+    const line = checkoutItemValue(item) * qty;
+    total += line;
+    const row = document.createElement('div');
+    row.className = 'checkout-item';
+    row.innerHTML = `
+      <div class="checkout-item-info">
+        <strong>${escapeHtml(item.name)}</strong>
+        <span>${escapeHtml(item.price)}${qty > 1 ? ` × ${qty}` : ''}</span>
+      </div>
+      <div class="checkout-item-price">${formatCurrency(line)}</div>
+    `;
+    container.appendChild(row);
+  });
+  if (totalEl) totalEl.textContent = formatCurrency(total);
+}
+
+async function submitCheckout() {
+  const submitBtn = document.getElementById('checkoutSubmitBtn');
+  if (!credentials.length) {
+    showToast('No delivery credentials available. Please add one in your account.');
+    return;
+  }
+
+  const methodSelect = document.getElementById('paymentMethod');
+  const method = methodSelect?.value || 'gcash';
+  const select = document.getElementById('credentialSelect');
+  const selectedCredential = credentials.find((c) => c.id === select?.value) || credentials[0];
+  if (!selectedCredential) {
+    showToast('Please choose a delivery credential.');
+    return;
+  }
+
+  const selected = checkoutSelectedItems();
+  if (!selected.length) {
+    showToast('No items selected for checkout.');
+    return;
+  }
+
+  const total = selected.reduce((sum, item) => sum + checkoutItemValue(item) * Math.max(1, Number(item.qty) || 1), 0);
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Starting GCash payment…';
+  }
+  try {
+    await handleGCashCheckout(selected, total, method, selectedCredential);
+  } finally {
+    if (submitBtn && document.body.contains(submitBtn)) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Pay with GCash';
+    }
+  }
+}
+
+function clearCheckoutReturnParams() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete('paid');
+  url.searchParams.delete('cancelled');
+  window.history.replaceState({}, '', url.pathname + url.search);
+}
+
+async function handleCheckoutReturn() {
+  const params = new URLSearchParams(window.location.search);
+  const paid = params.get('paid');
+  const cancelled = params.get('cancelled');
+
+  if (cancelled) {
+    showToast('Payment was cancelled. Nothing was charged — your items are still in your cart.');
+    clearCheckoutReturnParams();
+  }
+
+  if (!paid) return;
+  if (!supabaseClient) return;
+
+  removePaidItemsFromCart(paid);
+  renderCheckoutSummary();
+
+  let userId = currentUser?.id;
+  try {
+    const { data: sessionData } = await supabaseClient.auth.getSession();
+    userId = sessionData?.session?.user?.id || userId;
+  } catch (e) {}
+
+  let query = supabaseClient.from('orders').select('*').eq('id', paid);
+  if (userId) {
+    query = query.eq('user_id', userId);
+  }
+  const { data: order, error } = await query.maybeSingle();
+
+  clearCheckoutReturnParams();
+
+  if (error || !order) {
+    showToast('Payment received, but the receipt could not be loaded.');
+    return;
+  }
+
+  currentReceiptOrder = order;
+  renderReceipt(order);
+  document.getElementById('checkoutMain')?.classList.add('hidden');
+  document.getElementById('receiptSection')?.classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  loadOrders();
+}
+
+function receiptDateText(order) {
+  const value = order?.paid_at || order?.created_at || Date.now();
+  try {
+    return new Intl.DateTimeFormat('en-PH', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+      timeZone: 'Asia/Manila',
+    }).format(new Date(value));
+  } catch (e) {
+    return new Date(value).toLocaleString();
+  }
+}
+
+function renderReceipt(order) {
+  const container = document.getElementById('receiptContent');
+  if (!container) return;
+  const items = Array.isArray(order.items) ? order.items : [];
+  const orderCode = String(order.id || '').slice(0, 8).toUpperCase();
+  const customerName = order.customer_name || currentUser?.name || 'Customer';
+  const methodText = order.payment_method === 'pickup' ? 'GCASH, Pick Up' : 'GCASH, Door to Door';
+  const rows = items
+    .map((item) => {
+      const qty = Math.max(1, Number(item.qty) || 1);
+      const line = (Number(item.value) || 0) * qty;
+      return `<div class="receipt-row">
+        <span class="receipt-row-name">${escapeHtml(item.name)}${qty > 1 ? ` × ${qty}` : ''}</span>
+        <span class="receipt-row-price">${formatCurrency(line)}</span>
+      </div>`;
+    })
+    .join('');
+
+  container.innerHTML = `
+    <div class="receipt-head">
+      <div class="receipt-brand">
+        <strong>PC ROVER PH</strong>
+        <span>770 Sitio 4 Laot, Bahay Pare, Candaba, 2013 Pampanga</span>
+      </div>
+      <div class="receipt-code">
+        <span>Order Code</span>
+        <strong>#${escapeHtml(orderCode)}</strong>
+      </div>
+    </div>
+    <div class="receipt-meta">
+      <div><span>Customer</span><strong>${escapeHtml(customerName)}</strong></div>
+      <div><span>Phone</span><strong>${escapeHtml(order.phone || '—')}</strong></div>
+      <div><span>Delivery address</span><strong>${escapeHtml(order.address || '—')}</strong></div>
+      <div><span>Method</span><strong>${methodText}</strong></div>
+      <div><span>Date</span><strong>${escapeHtml(receiptDateText(order))}</strong></div>
+    </div>
+    <div class="receipt-items">
+      <div class="receipt-row receipt-row--head"><span>Product</span><span>Price</span></div>
+      ${rows}
+    </div>
+    <div class="receipt-total"><span>Total</span><strong>${formatCurrency(order.total)}</strong></div>
+    <p class="receipt-thanks">Thank you for shopping with PC ROVER PH!</p>
+  `;
+}
+
+function downloadReceiptImage() {
+  const order = currentReceiptOrder;
+  if (!order) {
+    showToast('No receipt available to save yet.');
+    return;
+  }
+
+  const items = Array.isArray(order.items) ? order.items : [];
+  const orderCode = String(order.id || '').slice(0, 8).toUpperCase();
+  const customerName = order.customer_name || currentUser?.name || 'Customer';
+  const methodText = order.payment_method === 'pickup' ? 'GCASH, Pick Up' : 'GCASH, Door to Door';
+
+  const scale = 2;
+  const W = 720;
+  const pad = 44;
+  const contentW = W - pad * 2;
+  const ink = '#0f172a';
+  const muted = '#64748b';
+  const lineColor = '#e2e8f0';
+  const accent = '#2563eb';
+
+  const fontSpec = (weight, size) => `${weight} ${size}px Inter, Arial, sans-serif`;
+  const ruler = document.createElement('canvas').getContext('2d');
+  const wrapLines = (text, font, maxW) => {
+    ruler.font = font;
+    const words = String(text == null ? '' : text).split(/\s+/).filter(Boolean);
+    if (!words.length) return [''];
+    const lines = [];
+    let current = '';
+    words.forEach((word) => {
+      const test = current ? `${current} ${word}` : word;
+      if (ruler.measureText(test).width > maxW && current) {
+        lines.push(current);
+        current = word;
+      } else {
+        current = test;
+      }
+    });
+    if (current) lines.push(current);
+    return lines;
+  };
+
+  const bodyFont = fontSpec(600, 15);
+  const metaEntries = [
+    { label: 'Customer', lines: [customerName] },
+    { label: 'Phone', lines: [order.phone || '—'] },
+    { label: 'Delivery address', lines: wrapLines(order.address || '—', bodyFont, contentW - 190) },
+    { label: 'Method', lines: [methodText] },
+    { label: 'Date', lines: [receiptDateText(order)] },
+  ];
+
+  const brandH = 84;
+  const metaLineH = 21;
+  const metaPad = 10;
+  const metaH = metaEntries.reduce((sum, entry) => sum + entry.lines.length * metaLineH + metaPad, 0);
+  const itemsHeadH = 32;
+  const itemRowH = 30;
+  const totalH = 60;
+  const thanksH = 52;
+  const H = pad + brandH + 8 + metaH + 18 + itemsHeadH + items.length * itemRowH + totalH + thanksH + pad - 10;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W * scale;
+  canvas.height = H * scale;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(scale, scale);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+  ctx.textAlign = 'left';
+
+  let y = pad + 24;
+  ctx.fillStyle = ink;
+  ctx.font = fontSpec(800, 26);
+  ctx.fillText('PC ROVER PH', pad, y);
+  y += 22;
+  ctx.fillStyle = muted;
+  ctx.font = fontSpec(400, 13);
+  ctx.fillText('770 Sitio 4 Laot, Bahay Pare, Candaba, 2013 Pampanga', pad, y);
+
+  ctx.textAlign = 'right';
+  ctx.fillStyle = muted;
+  ctx.font = fontSpec(600, 11);
+  ctx.fillText('ORDER CODE', W - pad, pad + 8);
+  ctx.fillStyle = accent;
+  ctx.font = fontSpec(800, 22);
+  ctx.fillText(`#${orderCode}`, W - pad, pad + 32);
+  ctx.textAlign = 'left';
+
+  y = pad + brandH;
+  ctx.strokeStyle = lineColor;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad, y);
+  ctx.lineTo(W - pad, y);
+  ctx.stroke();
+  y += 8;
+
+  metaEntries.forEach((entry) => {
+    const top = y;
+    ctx.fillStyle = muted;
+    ctx.font = fontSpec(600, 12);
+    ctx.fillText(entry.label, pad, top + 15);
+    ctx.fillStyle = ink;
+    ctx.font = bodyFont;
+    entry.lines.forEach((line, index) => {
+      ctx.fillText(line, pad + 170, top + 15 + index * metaLineH);
+    });
+    y = top + entry.lines.length * metaLineH + metaPad;
+  });
+
+  y += 10;
+  ctx.fillStyle = muted;
+  ctx.font = fontSpec(700, 12);
+  ctx.fillText('PRODUCT', pad, y + 18);
+  ctx.textAlign = 'right';
+  ctx.fillText('PRICE', W - pad, y + 18);
+  ctx.textAlign = 'left';
+  y += itemsHeadH;
+  ctx.strokeStyle = lineColor;
+  ctx.beginPath();
+  ctx.moveTo(pad, y);
+  ctx.lineTo(W - pad, y);
+  ctx.stroke();
+
+  ctx.font = bodyFont;
+  items.forEach((item) => {
+    const qty = Math.max(1, Number(item.qty) || 1);
+    const line = (Number(item.value) || 0) * qty;
+    ctx.fillStyle = ink;
+    ctx.fillText(`${item.name}${qty > 1 ? ` × ${qty}` : ''}`, pad, y + 20);
+    ctx.textAlign = 'right';
+    ctx.fillText(formatCurrency(line), W - pad, y + 20);
+    ctx.textAlign = 'left';
+    y += itemRowH;
+  });
+
+  y += 6;
+  ctx.strokeStyle = lineColor;
+  ctx.beginPath();
+  ctx.moveTo(pad, y);
+  ctx.lineTo(W - pad, y);
+  ctx.stroke();
+  ctx.fillStyle = ink;
+  ctx.font = fontSpec(700, 16);
+  ctx.fillText('TOTAL', pad, y + 30);
+  ctx.textAlign = 'right';
+  ctx.fillStyle = accent;
+  ctx.font = fontSpec(800, 20);
+  ctx.fillText(formatCurrency(order.total), W - pad, y + 31);
+  ctx.textAlign = 'left';
+  y += totalH;
+
+  ctx.fillStyle = muted;
+  ctx.font = fontSpec(400, 13);
+  ctx.textAlign = 'center';
+  ctx.fillText('Thank you for shopping with PC ROVER PH!', W / 2, y + 20);
+  ctx.textAlign = 'left';
+
+  try {
+    const url = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `PC-ROVER-Receipt-${orderCode || 'order'}.png`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } catch (e) {
+    console.error('downloadReceiptImage', e);
+    showToast('Could not save the receipt image.');
+  }
+}
+
+function initCheckoutPage() {
+  const checkoutMain = document.getElementById('checkoutMain');
+  if (!checkoutMain) return;
+
+  renderCheckoutSummary();
+
+  const methodSelect = document.getElementById('paymentMethod');
+  const pickupNoteEl = document.getElementById('pickupNote');
+  if (methodSelect && pickupNoteEl) {
+    pickupNoteEl.classList.toggle('hidden', methodSelect.value !== 'pickup');
+  }
+
+  const form = document.getElementById('checkoutForm');
+  if (form) {
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submitCheckout();
+    });
+  }
+
+  const saveBtn = document.getElementById('receiptSaveBtn');
+  if (saveBtn) saveBtn.addEventListener('click', downloadReceiptImage);
+
+  const homeBtn = document.getElementById('receiptHomeBtn');
+  if (homeBtn) {
+    homeBtn.addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+  }
+
+  handleCheckoutReturn();
 }
 
 function removePaidItemsFromCart(orderId) {

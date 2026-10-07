@@ -3,8 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PC ROVER PH | Privacy Policy</title>
-    <meta name="description" content="Privacy Policy for PC Rover PH, compliant with the Philippine Data Privacy Act of 2012." />
+    <title>PC ROVER PH | Checkout</title>
+    <meta
+      name="description"
+      content="Review your order, choose payment and delivery, and pay with GCash at PC ROVER PH."
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -26,7 +29,7 @@
     </script>
     <link rel="stylesheet" href="styles.css?v=69" />
   </head>
-  <body>
+  <body class="checkout-page">
     <header class="topbar" id="topbar">
       <div class="container nav-wrap">
         <a class="brand" href="index.html">PC ROVER PH</a>
@@ -53,89 +56,63 @@
     </header>
 
     <main>
-      <section class="section section-alt">
+      <section class="section">
         <div class="container">
-          <div class="legal-page">
-            <p class="eyebrow">Legal</p>
-            <h1>Privacy Policy</h1>
-            <p class="legal-effective">Effective Date: 05/21/2026</p>
+          <div class="section-heading">
+            <p class="eyebrow">Checkout</p>
+            <h2>Review your order &amp; pay</h2>
+            <p>Double-check your products, choose your payment and delivery details, then pay with GCash.</p>
+          </div>
 
-            <p>
-              PC Rover PH ("we," "our," or "us") is committed to protecting your privacy and ensuring that your personal data is handled securely and responsibly. This Privacy Policy outlines how we collect, use, share, and protect your personal information across our physical retail point-of-sale (POS) systems, e-commerce website, and integrated online storefronts.
-            </p>
+          <!-- Receipt (shown after a successful payment) -->
+          <div class="receipt-section hidden" id="receiptSection">
+            <div class="receipt-success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+              <div>
+                <strong>Order successfully placed.</strong>
+                <span>Payment confirmed. Keep this receipt for your records.</span>
+              </div>
+            </div>
+            <div class="receipt" id="receiptContent"></div>
+            <div class="receipt-actions">
+              <button type="button" class="btn btn-primary" id="receiptSaveBtn">Save Receipt</button>
+              <button type="button" class="btn btn-secondary" id="receiptHomeBtn">Return to Homepage</button>
+            </div>
+          </div>
 
-            <p>
-              This policy is designed to comply with applicable data protection regulations, including the Philippine Data Privacy Act of 2012 (Republic Act No. 10173).
-            </p>
+          <!-- Checkout (hidden once the receipt is shown) -->
+          <div class="checkout-layout" id="checkoutMain">
+            <div class="checkout-card">
+              <h3>Order summary</h3>
+              <div id="checkoutItems">
+                <p class="empty-state">Loading your items…</p>
+              </div>
+              <div class="checkout-total">
+                <span>Total</span>
+                <strong id="checkoutTotal">&#8369;0.00</strong>
+              </div>
+              <a class="checkout-back" href="cart.html">← Back to cart</a>
+            </div>
 
-            <h2>1. Information We Collect</h2>
-            <p>
-              We collect information that you provide directly to us, as well as data generated through your transactions and interactions with our retail and online systems.
-            </p>
-            <ul>
-              <li><strong>Personal Identification Information:</strong> Name, email address, phone number, and billing/shipping addresses.</li>
-              <li><strong>Transaction and Order Data:</strong> Details of products purchased, order history, receipts, and payment method details (processed securely through our payment partners).</li>
-              <li><strong>Account and Platform Data:</strong> If you purchase from us via our e-commerce platform or integrated third-party marketplaces, we collect order details, marketplace usernames, and synchronized fulfillment data.</li>
-              <li><strong>Technical Data:</strong> IP addresses, browser types, and usage data when you navigate our online storefronts.</li>
-            </ul>
-
-            <h2>2. How We Use Your Information</h2>
-            <p>
-              We utilize the collected data to operate our retail business, manage multi-channel sales, and improve your shopping experience. Your information is used to:
-            </p>
-            <ul>
-              <li>Process and fulfill your orders, whether placed in-store or online.</li>
-              <li>Synchronize inventory, pricing, and sales tracking across our internal management systems and connected digital marketplaces.</li>
-              <li>Provide customer support, process returns, and manage warranties for computer hardware and electronics.</li>
-              <li>Send transactional notifications, such as order confirmations, shipping updates, and electronic receipts.</li>
-              <li>Detect and prevent fraudulent transactions or unauthorized access to our systems.</li>
-            </ul>
-
-            <h2>3. Information Sharing and Disclosure</h2>
-            <p>
-              PC Rover PH does not sell or rent your personal information. We only share your data with trusted third parties necessary to operate our retail and e-commerce services:
-            </p>
-            <ul>
-              <li><strong>Marketplace Partners:</strong> We securely sync order and inventory data with third-party e-commerce platforms (such as Shopee and Lazada) to fulfill orders placed through those channels.</li>
-              <li><strong>Logistics and Delivery Providers:</strong> We share your name, contact number, and shipping address with courier services to deliver your purchases.</li>
-              <li><strong>Payment Processors:</strong> Your payment details are transmitted directly to secure, PCI-compliant payment gateways to process transactions.</li>
-              <li><strong>Legal Compliance:</strong> We may disclose information if required by law, subpoena, or government authorities to protect our legal rights or comply with statutory obligations under Philippine law.</li>
-            </ul>
-
-            <h2>4. Data Security and Retention</h2>
-            <p>
-              We implement industry-standard administrative, technical, and physical security measures within our POS and e-commerce systems to protect your data against unauthorized access, alteration, or disclosure.
-            </p>
-            <p>
-              We retain your personal information only for as long as necessary to fulfill the purposes outlined in this policy, comply with tax and accounting regulations, resolve disputes, and enforce our agreements.
-            </p>
-
-            <h2>5. Your Data Privacy Rights</h2>
-            <p>
-              Under the Data Privacy Act of 2012, you have specific rights regarding your personal information:
-            </p>
-            <ul>
-              <li><strong>Right to Access:</strong> You may request a copy of the personal data we hold about you.</li>
-              <li><strong>Right to Rectification:</strong> You can request that we correct any inaccurate or incomplete information.</li>
-              <li><strong>Right to Erasure:</strong> You may request the deletion of your personal data, subject to certain legal or operational exceptions (e.g., retaining records for tax purposes).</li>
-              <li><strong>Right to Object:</strong> You can opt out of receiving marketing communications or specific data processing activities.</li>
-            </ul>
-
-            <h2>6. Changes to This Privacy Policy</h2>
-            <p>
-              We may update this Privacy Policy periodically to reflect changes in our retail operations, system integrations, or legal requirements. The updated version will be indicated by an updated "Effective Date" at the top of this document.
-            </p>
-
-            <h2>7. Contact Us</h2>
-            <p>
-              If you have any questions, concerns, or requests regarding this Privacy Policy or how we handle your personal data, please contact our Data Protection Officer at:
-            </p>
-            <p>
-              PC Rover PH<br />
-              770 Sitio 4 Laot, Bahay Pare, Candaba, 2013 Pampanga<br />
-              Email: oliverpcrover2024@gmail.com<br />
-              Phone: 09150135223
-            </p>
+            <div class="checkout-card">
+              <h3>Payment &amp; delivery</h3>
+              <form id="checkoutForm" class="form-card">
+                <label>
+                  Payment and delivery method
+                  <select id="paymentMethod">
+                    <option value="gcash">GCASH, Door to Door</option>
+                    <option value="pickup">GCASH, Pick Up</option>
+                  </select>
+                </label>
+                <p class="modal-note pickup-note hidden" id="pickupNote">Once our store has accepted your order, we will contact you to arrange your pickup date.</p>
+                <label>
+                  Delivery credential
+                  <select id="credentialSelect"></select>
+                </label>
+                <button type="submit" class="btn btn-primary" id="checkoutSubmitBtn">Pay with GCash</button>
+              </form>
+              <p class="modal-note">You can manage your saved delivery credentials in your <a class="modal-link" href="account.html">account</a>.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -193,7 +170,7 @@
             Continue with Google
           </button>
         </div>
-        <p class="modal-note" id="signInNote">Sign in to access your cart, orders, and account.</p>
+        <p class="modal-note" id="signInNote">Sign in to continue to checkout.</p>
       </div>
     </div>
 
