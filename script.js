@@ -843,7 +843,7 @@ function renderOrders(orders) {
     }
     list.forEach((order) => {
       const card = document.createElement('div');
-      card.className = 'order-item';
+      card.className = 'order-item clickable';
       const createdDate = new Date(order.created_at);
       const dateText = Number.isNaN(createdDate.getTime())
         ? ''
@@ -891,15 +891,17 @@ function renderOrders(orders) {
         ${cancellable ? '<button type="button" class="btn btn-danger btn-sm order-cancel-btn">Cancel Order</button>' : ''}
       `;
       container.appendChild(card);
+      card.addEventListener('click', () => openOrderReceipt(order));
       if (cancellable) {
-        card.querySelector('.order-cancel-btn').addEventListener('click', () => {
+        card.querySelector('.order-cancel-btn').addEventListener('click', (event) => {
+          event.stopPropagation();
           showCancelOrderDialog(order);
         });
       }
     });
   };
 
-  renderInto(ordersList, orders.filter((order) => order.status === 'pending'));
+  renderInto(ordersList, orders.filter((order) => order.status !== 'completed' && order.status !== 'finished' && order.status !== 'cancelled'));
   renderInto(toShipList, orders.filter((order) => order.status === 'shipped' || order.status === 'preparing' || order.status === 'to_ship'));
   renderInto(toReceiveList, orders.filter((order) => order.status === 'delivered' || order.status === 'shipping' || order.status === 'to_receive'));
   renderInto(finishedList, orders.filter((order) => order.status === 'completed' || order.status === 'finished'));
@@ -1480,6 +1482,7 @@ function init() {
       if (confirmDialog) closeConfirmDialog();
       if (cancelReasonDialog) closePanel(cancelReasonDialog);
       if (successDialog) closePanel(successDialog);
+      if (orderReceiptModal) closePanel(orderReceiptModal);
     });
   }
 
@@ -1488,6 +1491,7 @@ function init() {
     if (confirmDialog) closeConfirmDialog();
     if (cancelReasonDialog) closePanel(cancelReasonDialog);
     if (successDialog) closePanel(successDialog);
+    if (orderReceiptModal) closePanel(orderReceiptModal);
   });
 
   const productSearchInput = document.getElementById('productSearch');
@@ -2106,9 +2110,9 @@ function receiptDateText(order) {
   }
 }
 
-function renderReceipt(order) {
-  const container = document.getElementById('receiptContent');
-  if (!container) return;
+function renderReceipt(order, container) {
+  const el = container || document.getElementById('receiptContent');
+  if (!el) return;
   const items = Array.isArray(order.items) ? order.items : [];
   const orderCode = String(order.id || '').slice(0, 8).toUpperCase();
   const customerName = order.customer_name || currentUser?.name || 'Customer';
@@ -2124,7 +2128,7 @@ function renderReceipt(order) {
     })
     .join('');
 
-  container.innerHTML = `
+  el.innerHTML = `
     <div class="receipt-head">
       <div class="receipt-brand">
         <strong>PC ROVER PH</strong>
@@ -2322,6 +2326,35 @@ function downloadReceiptImage() {
     console.error('downloadReceiptImage', e);
     showToast('Could not save the receipt image.');
   }
+}
+
+let orderReceiptModal = null;
+
+function initOrderReceiptModal() {
+  if (orderReceiptModal) return;
+  orderReceiptModal = document.createElement('div');
+  orderReceiptModal.className = 'modal hidden';
+  orderReceiptModal.innerHTML = `
+    <div class="modal-card receipt-modal">
+      <button class="modal-close" aria-label="Close receipt">×</button>
+      <div class="receipt" id="orderReceiptContent"></div>
+      <div class="receipt-actions">
+        <button type="button" class="btn btn-primary" id="orderReceiptSaveBtn">Save Receipt</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(orderReceiptModal);
+  orderReceiptModal.querySelector('.modal-card').addEventListener('click', (e) => e.stopPropagation());
+  orderReceiptModal.querySelector('.modal-close').addEventListener('click', () => closePanel(orderReceiptModal));
+  orderReceiptModal.querySelector('#orderReceiptSaveBtn').addEventListener('click', downloadReceiptImage);
+}
+
+function openOrderReceipt(order) {
+  initOrderReceiptModal();
+  if (!orderReceiptModal) return;
+  currentReceiptOrder = order;
+  renderReceipt(order, document.getElementById('orderReceiptContent'));
+  openPanel(orderReceiptModal);
 }
 
 function initCheckoutPage() {
