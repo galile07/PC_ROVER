@@ -1074,9 +1074,9 @@ function closePanel(panel) {
   panel.classList.add('hidden');
   if (!document.querySelector('.modal:not(.hidden)')) {
     document.body.classList.remove('modal-open');
-  }
-  if (overlay) {
-    overlay.classList.add('hidden');
+    if (overlay) {
+      overlay.classList.add('hidden');
+    }
   }
 }
 
@@ -1473,8 +1473,18 @@ function init() {
       closePanel(signInModal);
       closePanel(paymentModal);
       if (productModal) closePanel(productModal);
+      if (confirmDialog) closeConfirmDialog();
+      if (cancelReasonDialog) closePanel(cancelReasonDialog);
+      if (successDialog) closePanel(successDialog);
     });
   }
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    if (confirmDialog) closeConfirmDialog();
+    if (cancelReasonDialog) closePanel(cancelReasonDialog);
+    if (successDialog) closePanel(successDialog);
+  });
 
   const productSearchInput = document.getElementById('productSearch');
   if (productSearchInput) {
