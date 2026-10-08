@@ -1190,12 +1190,13 @@ function showCancelOrderDialog(order) {
       if (!target) return;
       const reason = cancelReasonDialog.querySelector('.cancel-reason-select').value;
       closePanel(cancelReasonDialog);
-      const { error } = await supabaseClient
+      const { data, error } = await supabaseClient
         .from('orders')
         .update({ status: 'cancelled', cancel_reason: reason, cancelled_by: 'user' })
         .eq('id', target.id)
-        .eq('user_id', currentUser.id);
-      if (error) {
+        .eq('user_id', currentUser.id)
+        .select('id');
+      if (error || !data || !data.length) {
         showToast('Failed to cancel order. Try again.');
         return;
       }
@@ -2387,7 +2388,7 @@ function initOrderReceiptModal() {
       <button class="modal-close" aria-label="Close receipt">×</button>
       <div class="receipt" id="orderReceiptContent"></div>
       <div class="receipt-actions">
-        <button type="button" class="btn btn-danger" id="orderReceiptCancelBtn" hidden>Cancel Order</button>
+        <button type="button" class="btn btn-danger hidden" id="orderReceiptCancelBtn">Cancel Order</button>
         <button type="button" class="btn btn-primary" id="orderReceiptSaveBtn">Save Receipt</button>
       </div>
     </div>
@@ -2409,7 +2410,7 @@ function openOrderReceipt(order) {
   renderReceipt(order, document.getElementById('orderReceiptContent'));
   const cancellable = order.status === 'preparing';
   const cancelReceiptBtn = orderReceiptModal.querySelector('#orderReceiptCancelBtn');
-  if (cancelReceiptBtn) cancelReceiptBtn.hidden = !cancellable;
+  if (cancelReceiptBtn) cancelReceiptBtn.classList.toggle('hidden', !cancellable);
   openPanel(orderReceiptModal);
 }
 
