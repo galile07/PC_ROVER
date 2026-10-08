@@ -163,9 +163,10 @@ create policy "Users can place their own orders"
 
 drop policy if exists "Users can cancel their own pending orders" on public.orders;
 drop policy if exists "Users can cancel their own pending or preparing orders" on public.orders;
-create policy "Users can cancel their own pending or preparing orders"
+drop policy if exists "Users can cancel their own preparing orders" on public.orders;
+create policy "Users can cancel their own preparing orders"
   on public.orders for update
-  using (auth.uid() = user_id and status in ('pending', 'preparing', 'shipped'))
+  using (auth.uid() = user_id and status = 'preparing')
   with check (auth.uid() = user_id and status = 'cancelled');
 
 -- When an order is cancelled without an explicit actor (e.g. the admin
