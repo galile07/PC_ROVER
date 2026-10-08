@@ -891,7 +891,7 @@ function renderOrders(orders) {
         })
         .join('<br>');
       const methodText = order.payment_method === 'gcash' ? 'GCASH, Door to Door' : 'GCASH, Pick Up';
-const cancellable = order.status === 'preparing';
+const cancellable = order.status === 'preparing' || order.status === 'shipped';
       const cancelledBy = order.cancelled_by === 'user' ? 'User' : 'Seller';
       const cancelledReason =
         order.cancelled_by === 'user'
@@ -2408,7 +2408,7 @@ function openOrderReceipt(order) {
   if (!orderReceiptModal) return;
   currentReceiptOrder = order;
   renderReceipt(order, document.getElementById('orderReceiptContent'));
-  const cancellable = order.status === 'preparing';
+const cancellable = order.status === 'preparing' || order.status === 'shipped';
   const cancelReceiptBtn = orderReceiptModal.querySelector('#orderReceiptCancelBtn');
   if (cancelReceiptBtn) cancelReceiptBtn.classList.toggle('hidden', !cancellable);
   openPanel(orderReceiptModal);
