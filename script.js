@@ -891,7 +891,7 @@ function renderOrders(orders) {
         })
         .join('<br>');
       const methodText = order.payment_method === 'gcash' ? 'GCASH, Door to Door' : 'GCASH, Pick Up';
-      const cancellable = order.status === 'pending' || order.status === 'preparing';
+      const cancellable = order.status === 'pending' || order.status === 'preparing' || order.status === 'shipped';
       const cancelledBy = order.cancelled_by === 'user' ? 'User' : 'Seller';
       const cancelledReason =
         order.cancelled_by === 'user'
@@ -2391,6 +2391,7 @@ function initOrderReceiptModal() {
       <button class="modal-close" aria-label="Close receipt">×</button>
       <div class="receipt" id="orderReceiptContent"></div>
       <div class="receipt-actions">
+        <button type="button" class="btn btn-danger" id="orderReceiptCancelBtn" hidden>Cancel Order</button>
         <button type="button" class="btn btn-primary" id="orderReceiptSaveBtn">Save Receipt</button>
       </div>
     </div>
@@ -2399,6 +2400,10 @@ function initOrderReceiptModal() {
   orderReceiptModal.querySelector('.modal-card').addEventListener('click', (e) => e.stopPropagation());
   orderReceiptModal.querySelector('.modal-close').addEventListener('click', () => closePanel(orderReceiptModal));
   orderReceiptModal.querySelector('#orderReceiptSaveBtn').addEventListener('click', downloadReceiptImage);
+  orderReceiptModal.querySelector('#orderReceiptCancelBtn').addEventListener('click', () => {
+    closePanel(orderReceiptModal);
+    if (currentReceiptOrder) showCancelOrderDialog(currentReceiptOrder);
+  });
 }
 
 function openOrderReceipt(order) {
@@ -2406,6 +2411,9 @@ function openOrderReceipt(order) {
   if (!orderReceiptModal) return;
   currentReceiptOrder = order;
   renderReceipt(order, document.getElementById('orderReceiptContent'));
+  const cancellable = order.status === 'pending' || order.status === 'preparing' || order.status === 'shipped';
+  const cancelReceiptBtn = orderReceiptModal.querySelector('#orderReceiptCancelBtn');
+  if (cancelReceiptBtn) cancelReceiptBtn.hidden = !cancellable;
   openPanel(orderReceiptModal);
 }
 
