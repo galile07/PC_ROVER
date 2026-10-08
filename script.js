@@ -1178,16 +1178,13 @@ function showCancelOrderDialog(order) {
         <p class="modal-note">If you're asking for a refund, copy your order code and contact the store.</p>
         <div class="confirm-actions">
           <button type="button" class="btn confirm-cancel">Keep Order</button>
-          <button type="button" class="btn confirm-ok" disabled>Cancel Order</button>
+          <button type="button" class="btn confirm-ok">Cancel Order</button>
         </div>
       </div>
     `;
     document.body.appendChild(cancelReasonDialog);
     cancelReasonDialog.querySelector('.modal-card').addEventListener('click', (e) => e.stopPropagation());
     cancelReasonDialog.querySelector('.confirm-cancel').addEventListener('click', () => closePanel(cancelReasonDialog));
-    cancelReasonDialog.querySelector('.cancel-reason-select').addEventListener('change', (event) => {
-      cancelReasonDialog.querySelector('.confirm-ok').disabled = !event.target.value;
-    });
     cancelReasonDialog.querySelector('.confirm-ok').addEventListener('click', async () => {
       const target = cancelReasonDialog._order;
       if (!target) return;
@@ -1208,7 +1205,6 @@ function showCancelOrderDialog(order) {
   }
   cancelReasonDialog._order = order;
   cancelReasonDialog.querySelector('.cancel-reason-select').value = '';
-  cancelReasonDialog.querySelector('.confirm-ok').disabled = true;
   openPanel(cancelReasonDialog);
 }
 

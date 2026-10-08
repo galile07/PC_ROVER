@@ -62,13 +62,12 @@ Deno.serve(async (req) => {
   }
 
   if (sessionRef) {
+    const isPaid = type === 'checkout_session.payment.paid';
+    const isFailed = type.includes('failed');
     const update = {
       payment_id: paymentId,
-      ...(type === 'checkout_session.payment.paid'
-        ? { status: 'paid', paid_at: new Date().toISOString() }
-        : type.includes('failed')
-          ? { status: 'payment_failed', paid_at: null }
-          : {}),
+      ...(isPaid ? { status: 'preparing', paid_at: new Date().toISOString() } : {}),
+      ...(isFailed ? { status: 'payment_failed', paid_at: null } : {}),
     };
 
     let filter;
@@ -76,6 +75,14 @@ Deno.serve(async (req) => {
       filter = `id=eq.${encodeURIComponent(orderId)}`;
     } else {
       filter = `payment_id=eq.${encodeURIComponent(sessionId)}`;
+    }
+    // Only auto-accept (preparing) before an order leaves that stage, so a
+    // late webhook never revives or overwrites a cancelled/shipped/delivered/
+    // finished order.
+    if (isPaid) {
+      filter += '&status=in.(pending,paid,preparing)';
+    } else if (isFailed) {
+      filter += '&status=in.(pending,paid)';
     }
 
     await fetch(`${supabaseUrl}/rest/v1/orders?${filter}`, {
